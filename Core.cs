@@ -157,8 +157,8 @@ namespace SMBZ_64
                 );
                 mesh.SetTriangles(new int[] { 0, 1, 2, 3, 4, 5 }, 0);
                 surfaceMesh.sharedMesh = mesh;
-                RefreshStaticTerrain();
             }
+            RefreshStaticTerrain();
 
             for (int i = 1; i <= 2; i++)
             {
