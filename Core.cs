@@ -65,15 +65,18 @@ namespace SMBZ_64
 
             foreach (var o in _marios)
             {
+                if (!o.smbzChar.CharacterGO)
+                    continue;
+
                 if (!o.smbzChar.CharacterGO.IsDead)
                     o.SetHealth(0x800);
 
                 o.contextUpdate();
 
                 if (o.smbzChar.CharacterGO.IsHurt)
-                    o.SetPosition(o.smbzChar.transform.position, new Vector3(0, -0.8f, -1));
+                    o.SetPosition(o.smbzChar.CharacterGO.transform.position, new Vector3(0, -0.8f, -1));
                 else
-                    o.smbzChar.transform.position = o.transform.position + new Vector3(0, 0.8f, 0);
+                    o.smbzChar.CharacterGO.transform.position = o.transform.position + new Vector3(0, 0.8f, 0);
             }
         }
 
@@ -84,8 +87,14 @@ namespace SMBZ_64
 
             foreach (var o in _marios)
             {
+                if (!o.smbzChar.CharacterGO)
+                    continue;
+
                 Type baseCharType = typeof(BaseCharacter);
                 FieldInfo frozenField = baseCharType.GetField("IsFrozen", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                if (o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled)
+                    o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled = false;
 
                 if (!(bool)frozenField.GetValue(o.smbzChar.CharacterGO))
                     o.contextFixedUpdate();
