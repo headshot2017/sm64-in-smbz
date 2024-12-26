@@ -71,9 +71,6 @@ namespace SMBZ_64
                 if (!o.smbzChar.CharacterGO)
                     continue;
 
-                if (!o.smbzChar.CharacterGO.IsDead)
-                    o.SetHealth(0x800);
-
                 o.contextUpdate();
 
                 if (o.smbzChar.CharacterGO.IsHurt)
@@ -92,6 +89,9 @@ namespace SMBZ_64
             {
                 if (!o.smbzChar.CharacterGO)
                     continue;
+
+                if (!o.smbzChar.CharacterGO.IsDead)
+                    o.SetHealth(0x800);
 
                 Type baseCharType = typeof(BaseCharacter);
                 FieldInfo frozenField = baseCharType.GetField("IsFrozen", BindingFlags.NonPublic | BindingFlags.Instance);
