@@ -406,6 +406,11 @@ namespace LibSM64
             sm64_mario_kill(marioId);
         }
 
+        public static void MarioSetFaceAngle(int marioId, float angle)
+        {
+            sm64_set_mario_faceangle(marioId, angle);
+        }
+
         public static uint SurfaceObjectCreate( Vector3 position, Quaternion rotation, SM64Surface[] surfaces )
         {
             var surfListHandle = GCHandle.Alloc( surfaces, GCHandleType.Pinned );

@@ -99,6 +99,7 @@ namespace SMBZ_64
                     mario.smbzChar = smbzMario;
                     mario.changeActionCallback = OnMarioChangeAction;
                     mario.SetMaterial(m);
+                    mario.SetFaceAngle((float)Math.PI/2 * (i == 1 ? -1 : 1));
                     RegisterMario(mario);
                 }
                 else

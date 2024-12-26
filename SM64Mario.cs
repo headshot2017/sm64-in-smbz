@@ -124,6 +124,11 @@ namespace LibSM64
             Interop.MarioKill(marioId);
         }
 
+        public void SetFaceAngle(float angle)
+        {
+            Interop.MarioSetFaceAngle(marioId, angle);
+        }
+
         public void contextFixedUpdate()
         {
             uint oldAction = marioState.action;
