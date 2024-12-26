@@ -33,6 +33,9 @@ namespace SMBZ_64
 
         public override void OnLateInitializeMelon()
         {
+            BattleCache.ins.CharacterData_Mario.Prefab_BattleGameObject.GetComponent<MarioControl>().Comp_SpriteRenderer.enabled = false;
+            BattleCache.ins.CharacterData_FireMario.Prefab_BattleGameObject.GetComponent<FireMarioControl>().Comp_SpriteRenderer.enabled = false;
+
             BattleCache.ins.CharacterData_Mario.Prefab_SpecialCharacterSettingsUI.AddComponent<SMBZG.CharacterSelect.CharacterSetting_SM64>();
         }
 
@@ -92,9 +95,6 @@ namespace SMBZ_64
 
                 Type baseCharType = typeof(BaseCharacter);
                 FieldInfo frozenField = baseCharType.GetField("IsFrozen", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                if (o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled)
-                    o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled = false;
 
                 if (!(bool)frozenField.GetValue(o.smbzChar.CharacterGO))
                     o.contextFixedUpdate();
@@ -191,7 +191,6 @@ namespace SMBZ_64
 
                     }
 
-                    smbzMario.Comp_SpriteRenderer.enabled = false;
                     //smbzMario.enabled = false;
                     mario.smbzChar = smbzControl;
                     mario.changeActionCallback = OnMarioChangeAction;
