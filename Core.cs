@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Reflection;
 using HarmonyLib;
 using System.Net.NetworkInformation;
+using JetBrains.Annotations;
 
 [assembly: MelonInfo(typeof(SMBZ_64.Core), "SMBZ_64", "1.0.0", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
@@ -30,6 +31,11 @@ namespace SMBZ_64
             Interop.GlobalInit(rom);
         }
 
+        public override void OnLateInitializeMelon()
+        {
+            BattleCache.ins.CharacterData_Mario.Prefab_SpecialCharacterSettingsUI.AddComponent<SMBZG.CharacterSelect.CharacterSetting_SM64>();
+        }
+
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
         {
             _surfaceObjects.Clear();
@@ -40,70 +46,15 @@ namespace SMBZ_64
         {
             LoggerInstance.Msg($"{buildIndex} {sceneName}");
 
-            if (buildIndex != 3)
-                return;
-
-            for (int i = -10; i <= 10; i++)
+            switch (buildIndex)
             {
-                Vector3 P = new Vector3(128*i, 0, -1);
-                GameObject surfaceObj = new GameObject("SM64_SURFACE");
-                surfaceObj.transform.position = P;
-                MeshCollider surfaceMesh = surfaceObj.AddComponent<MeshCollider>();
-                surfaceObj.AddComponent<SM64StaticTerrain>();
-                Mesh mesh = new Mesh();
-                mesh.name = "SM64_SURFACE_MESH";
-                mesh.SetVertices(
-                    new Vector3[]
-                    {
-                            new Vector3(-128,0,-128), new Vector3(128,0,+128), new Vector3(128,0,-128),
-                            new Vector3(128,0,+128), new Vector3(-128,0,-128), new Vector3(-128,0,+128),
-                    }
-                );
-                mesh.SetTriangles(new int[] { 0, 1, 2, 3, 4, 5 }, 0);
-                surfaceMesh.sharedMesh = mesh;
-                RefreshStaticTerrain();
-            }
+                case 3:
+                    BattleStart();
+                    break;
 
-            for (int i = 1; i <= 2; i++)
-            {
-                GameObject[] objs = GameObject.FindGameObjectsWithTag($"Team{i}");
-
-                MarioControl smbzMario = objs[1].GetComponent<MarioControl>();
-                if (!smbzMario) // Only replace Mario with SM64 Mario
-                    continue;
-
-                GameObject marioObj = new GameObject("SM64_MARIO");
-                marioObj.transform.position = new Vector3(smbzMario.transform.position.x, smbzMario.transform.position.y, -1);
-                SM64InputSMBZG input = marioObj.AddComponent<SM64InputSMBZG>();
-                SM64Mario mario = marioObj.AddComponent<SM64Mario>();
-                if (mario.spawned)
-                {
-                    input.c = objs[0].GetComponent<CharacterControl>();
-
-                    Material[] mat = GameObject.FindObjectsOfType<Material>();
-                    Material m = Material.Instantiate<Material>(mat[1]);
-                    Shader[] sh = Resources.FindObjectsOfTypeAll<Shader>();
-                    foreach (Shader s in sh)
-                    {
-                        if (s.name != "Legacy Shaders/VertexLit")
-                            continue;
-
-                        m.shader = s;
-                        m.SetColor("_Emission", new Color(0.4f, 0.4f, 0.4f, 1));
-                        break;
-
-                    }
-
-                    smbzMario.Comp_SpriteRenderer.enabled = false;
-                    //smbzMario.enabled = false;
-                    mario.smbzChar = smbzMario;
-                    mario.changeActionCallback = OnMarioChangeAction;
-                    mario.SetMaterial(m);
-                    mario.SetFaceAngle((float)Math.PI/2 * (i == 1 ? -1 : 1));
-                    RegisterMario(mario);
-                }
-                else
-                    LoggerInstance.Msg($"Failed to spawn Mario {i}");
+                case 6:
+                    SetupCharSelect();
+                    break;
             }
         }
 
@@ -114,12 +65,12 @@ namespace SMBZ_64
 
             foreach (var o in _marios)
             {
-                if (!o.smbzChar.IsDead)
+                if (!o.smbzChar.CharacterGO.IsDead)
                     o.SetHealth(0x800);
 
                 o.contextUpdate();
 
-                if (o.smbzChar.IsHurt)
+                if (o.smbzChar.CharacterGO.IsHurt)
                     o.SetPosition(o.smbzChar.transform.position, new Vector3(0, -0.8f, -1));
                 else
                     o.smbzChar.transform.position = o.transform.position + new Vector3(0, 0.8f, 0);
@@ -133,10 +84,10 @@ namespace SMBZ_64
 
             foreach (var o in _marios)
             {
-                Type marioControlType = typeof(MarioControl);
-                FieldInfo frozenField = marioControlType.GetField("IsFrozen", BindingFlags.NonPublic | BindingFlags.Instance);
+                Type baseCharType = typeof(BaseCharacter);
+                FieldInfo frozenField = baseCharType.GetField("IsFrozen", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                if (!(bool)frozenField.GetValue(o.smbzChar))
+                if (!(bool)frozenField.GetValue(o.smbzChar.CharacterGO))
                     o.contextFixedUpdate();
             }
         }
@@ -177,6 +128,80 @@ namespace SMBZ_64
         }
 
 
+        void BattleStart()
+        {
+            for (int i = -10; i <= 10; i++)
+            {
+                Vector3 P = new Vector3(128 * i, 0, -1);
+                GameObject surfaceObj = new GameObject("SM64_SURFACE");
+                surfaceObj.transform.position = P;
+                MeshCollider surfaceMesh = surfaceObj.AddComponent<MeshCollider>();
+                surfaceObj.AddComponent<SM64StaticTerrain>();
+                Mesh mesh = new Mesh();
+                mesh.name = "SM64_SURFACE_MESH";
+                mesh.SetVertices(
+                    new Vector3[]
+                    {
+                            new Vector3(-128,0,-128), new Vector3(128,0,+128), new Vector3(128,0,-128),
+                            new Vector3(128,0,+128), new Vector3(-128,0,-128), new Vector3(-128,0,+128),
+                    }
+                );
+                mesh.SetTriangles(new int[] { 0, 1, 2, 3, 4, 5 }, 0);
+                surfaceMesh.sharedMesh = mesh;
+                RefreshStaticTerrain();
+            }
+
+            for (int i = 1; i <= 2; i++)
+            {
+                GameObject[] objs = GameObject.FindGameObjectsWithTag($"Team{i}");
+
+                CharacterControl smbzControl = objs[0].GetComponent<CharacterControl>();
+                if (smbzControl.CharacterGO is not MarioControl)
+                    continue;
+
+                MarioControl smbzMario = (MarioControl)smbzControl.CharacterGO;
+                GameObject marioObj = new GameObject("SM64_MARIO");
+                marioObj.transform.position = new Vector3(smbzMario.transform.position.x, smbzMario.transform.position.y, -1);
+                SM64InputSMBZG input = marioObj.AddComponent<SM64InputSMBZG>();
+                SM64Mario mario = marioObj.AddComponent<SM64Mario>();
+                if (mario.spawned)
+                {
+                    input.c = smbzControl;
+
+                    Material[] mat = GameObject.FindObjectsOfType<Material>();
+                    Material m = Material.Instantiate<Material>(mat[1]);
+                    Shader[] sh = Resources.FindObjectsOfTypeAll<Shader>();
+                    foreach (Shader s in sh)
+                    {
+                        if (s.name != "Legacy Shaders/VertexLit")
+                            continue;
+
+                        m.shader = s;
+                        m.SetColor("_Emission", new Color(0.4f, 0.4f, 0.4f, 1));
+                        break;
+
+                    }
+
+                    smbzMario.Comp_SpriteRenderer.enabled = false;
+                    //smbzMario.enabled = false;
+                    mario.smbzChar = smbzControl;
+                    mario.changeActionCallback = OnMarioChangeAction;
+                    mario.SetMaterial(m);
+                    mario.SetFaceAngle((float)Math.PI / 2 * (i == 1 ? -1 : 1));
+                    RegisterMario(mario);
+                }
+                else
+                    LoggerInstance.Msg($"Failed to spawn Mario {i}");
+            }
+        }
+
+        void SetupCharSelect()
+        {
+            // check hovering on Mario
+            //GameObject verticalList = GameObject.Find("Player1_SpecialSettings").transform.GetChild(0).GetChild(1).gameObject;
+        }
+
+
         static void OnMarioChangeAction(SM64Mario o)
         {
             uint action = o.marioState.action;
@@ -197,12 +222,12 @@ namespace SMBZ_64
             {
                 foreach (var o in _marios)
                 {
-                    if (o.smbzChar != __instance)
+                    if (o.smbzChar.CharacterGO != __instance)
                         continue;
 
-                    if (o.smbzChar.IsHurt)
+                    if (o.smbzChar.CharacterGO.IsHurt)
                         o.TakeDamage((uint)(request.damage * 3), 0, o.transform.position + new Vector3(request.launch.x * -1, 0, -1));
-                    if (o.smbzChar.IsDead)
+                    if (o.smbzChar.CharacterGO.IsDead)
                         o.Kill();
                 }
             }

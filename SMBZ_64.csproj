@@ -246,6 +246,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Include="CharacterSelect_SM64.cs" />
 		<Compile Include="Core.cs" />
 		<Compile Include="Interop.cs" />
 		<Compile Include="SM64DynamicTerrain.cs" />

@@ -26,7 +26,7 @@ namespace LibSM64
         int marioId;
 
         float tick;
-        public MarioControl smbzChar;
+        public CharacterControl smbzChar;
         public Action<SM64Mario> changeActionCallback = null;
 
         public bool spawned { get { return marioId != -1; } }
