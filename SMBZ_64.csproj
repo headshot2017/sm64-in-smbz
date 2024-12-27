@@ -246,9 +246,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="CharacterSelect_SM64.cs" />
+		<Compile Include="CharacterSelect_Mario.cs" />
 		<Compile Include="Core.cs" />
 		<Compile Include="Interop.cs" />
+		<Compile Include="ModSettings.cs" />
 		<Compile Include="SM64DynamicTerrain.cs" />
 		<Compile Include="SM64InputProvider.cs" />
 		<Compile Include="SM64Mario.cs" />

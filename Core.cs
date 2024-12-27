@@ -1,10 +1,10 @@
 ﻿using MelonLoader;
 using LibSM64;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Reflection;
 using HarmonyLib;
-using System.Net.NetworkInformation;
-using JetBrains.Annotations;
+using SMBZG.CharacterSelect;
 
 [assembly: MelonInfo(typeof(SMBZ_64.Core), "SMBZ_64", "1.0.0", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
@@ -33,10 +33,41 @@ namespace SMBZ_64
 
         public override void OnLateInitializeMelon()
         {
-            BattleCache.ins.CharacterData_Mario.Prefab_BattleGameObject.GetComponent<MarioControl>().Comp_SpriteRenderer.enabled = false;
-            BattleCache.ins.CharacterData_FireMario.Prefab_BattleGameObject.GetComponent<FireMarioControl>().Comp_SpriteRenderer.enabled = false;
+            // Add "SM64 Mario" to Mario's special settings
 
-            BattleCache.ins.CharacterData_Mario.Prefab_SpecialCharacterSettingsUI.AddComponent<SMBZG.CharacterSelect.CharacterSetting_SM64>();
+            // Clone the original object
+            GameObject o = GameObject.Instantiate(BattleCache.ins.CharacterData_Mario.Prefab_SpecialCharacterSettingsUI);
+            GameObject.DontDestroyOnLoad(o);
+            o.name = "UI_CharacterSettings_Mario";
+            CharacterSetting oldCharSetting = o.GetComponent<CharacterSetting>();
+            CharacterSetting_Mario charSetting = o.AddComponent<CharacterSetting_Mario>();
+
+            // Copy all fields from oldCharSetting to the new one
+            Type type = typeof(CharacterSetting);
+            FieldInfo[] fields = type.GetFields();
+            foreach (FieldInfo field in fields)
+            {
+                field.SetValue(charSetting, field.GetValue(oldCharSetting));
+            }
+            GameObject.Destroy(oldCharSetting);
+
+            BattleCache.ins.CharacterData_Mario.Prefab_SpecialCharacterSettingsUI = o;
+
+            // Add the "SM64 Mario" checkbox
+            GameObject verticalList = o.transform.GetChild(1).gameObject;
+            GameObject UseSM64 = GameObject.Instantiate(verticalList.transform.GetChild(0).gameObject); // Clone the "Alternate Color" checkbox
+            GameObject.DontDestroyOnLoad(UseSM64);
+            UseSM64.name = "UseSM64";
+            UseSM64.transform.parent = verticalList.transform;
+
+            GameObject LabelObj = UseSM64.transform.GetChild(0).gameObject;
+            TMPro.TextMeshProUGUI Label = LabelObj.GetComponent<TMPro.TextMeshProUGUI>();
+            Label.text = "SM64 Mario";
+
+            GameObject toggleObj = UseSM64.transform.GetChild(1).gameObject;
+            Toggle toggle = toggleObj.GetComponent<Toggle>();
+            toggleObj.name = "UseSM64 Toggle";
+            charSetting.Toggle_SM64 = toggle;
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
@@ -70,6 +101,8 @@ namespace SMBZ_64
             {
                 if (!o.smbzChar.CharacterGO)
                     continue;
+                if (o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled)
+                    o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled = false;
 
                 o.contextUpdate();
 
@@ -163,9 +196,9 @@ namespace SMBZ_64
             for (int i = 1; i <= 2; i++)
             {
                 GameObject[] objs = GameObject.FindGameObjectsWithTag($"Team{i}");
-
                 CharacterControl smbzControl = objs[0].GetComponent<CharacterControl>();
-                if (smbzControl.CharacterGO is not MarioControl)
+                ModSettings.Player player = ModSettings.GetPlayerSettings((TeamUtility.IO.PlayerID)(i - 1));
+                if (smbzControl.CharacterGO is not MarioControl || !player.Mario_SM64_IsEnabled.Value)
                     continue;
 
                 MarioControl smbzMario = (MarioControl)smbzControl.CharacterGO;
@@ -205,8 +238,7 @@ namespace SMBZ_64
 
         void SetupCharSelect()
         {
-            // check hovering on Mario
-            //GameObject verticalList = GameObject.Find("Player1_SpecialSettings").transform.GetChild(0).GetChild(1).gameObject;
+            
         }
 
 
