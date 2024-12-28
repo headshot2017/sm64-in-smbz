@@ -3,7 +3,6 @@ using LibSM64;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Reflection;
-using HarmonyLib;
 using SMBZG.CharacterSelect;
 
 [assembly: MelonInfo(typeof(SMBZ_64.Core), "SMBZ_64", "1.0.0", "Headshotnoby/headshot2017", null)]
@@ -101,8 +100,8 @@ namespace SMBZ_64
             {
                 if (!o.smbzChar.CharacterGO)
                     continue;
-                if (o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled)
-                    o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled = false;
+                //if (o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled)
+                    //o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled = false;
 
                 o.contextUpdate();
 
@@ -201,7 +200,19 @@ namespace SMBZ_64
                 if (smbzControl.CharacterGO is not MarioControl || !player.Mario_SM64_IsEnabled.Value)
                     continue;
 
-                MarioControl smbzMario = (MarioControl)smbzControl.CharacterGO;
+                Type type = typeof(Mario64Control);
+                FieldInfo field = type.GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                MarioControl smbzMarioOld = objs[1].GetComponent<MarioControl>();
+                Mario64Control smbzMario = objs[1].AddComponent<Mario64Control>();
+                smbzControl.CharacterGO = smbzMario;
+                smbzMarioOld.Comp_SpriteRenderer.enabled = false;
+                smbzMario.Comp_Hurtbox = smbzMarioOld.Comp_Hurtbox;
+                smbzMario.Comp_InterplayerCollider = smbzMarioOld.Comp_InterplayerCollider;
+                field.SetValue(smbzMario, smbzControl);
+                GameObject.Destroy(smbzMarioOld);
+                smbzMario.enabled = true;
+
                 GameObject marioObj = new GameObject("SM64_MARIO");
                 marioObj.transform.position = new Vector3(smbzMario.transform.position.x, smbzMario.transform.position.y, -1);
                 SM64InputSMBZG input = marioObj.AddComponent<SM64InputSMBZG>();
@@ -209,6 +220,8 @@ namespace SMBZ_64
                 if (mario.spawned)
                 {
                     input.c = smbzControl;
+                    smbzMario.sm64 = mario;
+                    smbzMario.sm64input = input;
 
                     Material[] mat = GameObject.FindObjectsOfType<Material>();
                     Material m = Material.Instantiate<Material>(mat[1]);
@@ -224,7 +237,6 @@ namespace SMBZ_64
 
                     }
 
-                    //smbzMario.enabled = false;
                     mario.smbzChar = smbzControl;
                     mario.changeActionCallback = OnMarioChangeAction;
                     mario.SetMaterial(m);
@@ -246,31 +258,10 @@ namespace SMBZ_64
         {
             uint action = o.marioState.action;
             uint actionArg = o.marioState.actionArg;
-            
+
+            Mario64Control character = (Mario64Control)o.smbzChar.CharacterGO;
+            character.OnChangeSM64Action(action, actionArg);
             Melon<Core>.Logger.Msg($"{o} {o.smbzChar} {action} {actionArg}");
-        }
-
-        [HarmonyPatch(typeof(BaseCharacter), "Hurt", new Type[] { typeof(TakeDamageRequest) } )]
-        static class HurtPatch
-        {
-            private static void Prefix(BaseCharacter __instance)
-            {
-
-            }
-
-            private static void Postfix(BaseCharacter __instance, TakeDamageRequest request)
-            {
-                foreach (var o in _marios)
-                {
-                    if (o.smbzChar.CharacterGO != __instance)
-                        continue;
-
-                    if (o.smbzChar.CharacterGO.IsHurt)
-                        o.TakeDamage((uint)(request.damage * 3), 0, o.transform.position + new Vector3(request.launch.x * -1, 0, -1));
-                    if (o.smbzChar.CharacterGO.IsDead)
-                        o.Kill();
-                }
-            }
         }
     }
 }
