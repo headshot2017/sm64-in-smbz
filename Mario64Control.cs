@@ -107,6 +107,6 @@ public class Mario64Control : BaseCharacter
 
         if (sm64 == null) return;
         sm64.Kill();
-        //SoundCache.ins.PlaySound(Audio_Voice_OnDeath);
+        Interop.PlaySound(SM64Constants.SOUND_MARIO_WAAAOOOW);
     }
 }
