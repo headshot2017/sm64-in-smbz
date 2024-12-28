@@ -721,12 +721,12 @@ SM64_LIB_FN uint16_t sm64_get_current_background_music()
     return get_current_background_music();
 }
 
-SM64_LIB_FN void sm64_play_sound(int32_t soundBits, float *pos)
+SM64_LIB_FN void sm64_play_sound(uint32_t soundBits, float *pos)
 {
     play_sound(soundBits,pos);
 }
 
-SM64_LIB_FN void sm64_play_sound_global(int32_t soundBits)
+SM64_LIB_FN void sm64_play_sound_global(uint32_t soundBits)
 {
     play_sound(soundBits,gGlobalSoundSource);
 }

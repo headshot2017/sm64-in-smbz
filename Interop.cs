@@ -250,9 +250,9 @@ namespace LibSM64
         [DllImport("sm64")]
         static extern ushort sm64_get_current_background_music();
         [DllImport("sm64")]
-        static extern void sm64_play_sound(int soundBits, float[] pos);
+        static extern void sm64_play_sound(uint soundBits, float[] pos);
         [DllImport("sm64")]
-        static extern void sm64_play_sound_global(int soundBits);
+        static extern void sm64_play_sound_global(uint soundBits);
         [DllImport("sm64")]
         static extern void sm64_set_sound_volume(float vol);
 
@@ -333,7 +333,7 @@ namespace LibSM64
             romHandle.Free();
             textureDataHandle.Free();
 
-            sm64_play_sound_global(1881079681); // SOUND_MENU_STAR_SOUND
+            sm64_play_sound_global(SM64Constants.SOUND_MENU_STAR_SOUND);
             isGlobalInit = true;
         }
 
@@ -406,6 +406,16 @@ namespace LibSM64
         public static void MarioSetFaceAngle(int marioId, float angle)
         {
             sm64_set_mario_faceangle(marioId, angle);
+        }
+
+        public static void PlaySound(uint soundBits, Vector3 pos)
+        {
+            sm64_play_sound(soundBits, new float[] {pos.x, pos.y, pos.z});
+        }
+
+        public static void PlaySound(uint soundBits)
+        {
+            sm64_play_sound_global(soundBits);
         }
 
         public static uint SurfaceObjectCreate( Vector3 position, Quaternion rotation, SM64Surface[] surfaces )
