@@ -1,5 +1,6 @@
 ﻿using LibSM64;
 using MelonLoader;
+using System;
 using System.Reflection;
 using UnityEngine;
 using ActionArgKey = System.Collections.Generic.KeyValuePair<uint, uint>;
@@ -16,8 +17,8 @@ public class Mario64Control : BaseCharacter
         {
             try
             {
+                Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control attack!");
                 GetType().GetField("PlayerState", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, PlayerStateENUM.Attacking);
-                PlaySoundForMelee(SoundCache.ins.Battle_Swish_Light);
                 bool IsFacingRight = (bool)GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
                 typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
                     new HitBoxDamageParameters
@@ -34,6 +35,8 @@ public class Mario64Control : BaseCharacter
                         OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
                     }
                 );
+                base.HitBox_0.transform.localPosition = new Vector2(-0.5f, 0);
+                base.HitBox_0.transform.localScale = new Vector2(1, 1);
             }
             catch (Exception e)
             {
@@ -43,6 +46,9 @@ public class Mario64Control : BaseCharacter
     };
 
     private Dictionary<ActionArgKey, AttackBundle> SM64Attacks = new();
+
+    private Animator Comp_Animator;
+    private Rigidbody2D Comp_Rigidbody2D;
 
     protected override void Awake()
     {
@@ -89,6 +95,8 @@ public class Mario64Control : BaseCharacter
             base.Start();
             base.HitBox_0 = base.transform.Find("HitBox_0").GetComponent<HitBox>();
             base.HitBox_0.tag = base.tag;
+            Comp_Animator = GetComponent<Animator>();
+            Comp_Rigidbody2D = GetComponent<Rigidbody2D>();
             SoundEffect_Jump = null;
         }
         catch (Exception e)
@@ -110,6 +118,7 @@ public class Mario64Control : BaseCharacter
         try
         {
             base.Update();
+            Comp_Animator.enabled = false;
         }
         catch (Exception e)
         {
@@ -122,13 +131,33 @@ public class Mario64Control : BaseCharacter
         // empty
     }
 
+    /*
+    public new void PrepareAnAttack(AttackBundle AttackToPrepare, float MinimumPrepTime = 0f)
+    {
+        CurrentAttackData = AttackToPrepare;
+        Melon<SMBZ_64.Core>.Logger.Msg($"get coroutine");
+        Coroutine Coroutine_GroundedOnLandingFallback = (Coroutine)GetType().GetProperty("Coroutine_GroundedOnLandingFallback", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+        Melon<SMBZ_64.Core>.Logger.Msg($"check coroutine");
+        if (Coroutine_GroundedOnLandingFallback != null)
+        {
+            Melon<SMBZ_64.Core>.Logger.Msg($"stop coroutine");
+            StopCoroutine(Coroutine_GroundedOnLandingFallback);
+        }
+
+        Melon<SMBZ_64.Core>.Logger.Msg($"start coroutine");
+        GetType().GetProperty("Coroutine_GroundedOnLandingFallback", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, StartCoroutine(GroundedOnLandingFallback()));
+    }
+    */
+
     public void OnChangeSM64Action(uint action, uint actionArg)
     {
         ActionArgKey k = new ActionArgKey(action, actionArg);
         Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control action 0x{action:X} {actionArg}");
-        if (SM64Attacks.ContainsKey(k))
+        base.HitBox_0.IsActive = SM64Attacks.ContainsKey(k);
+        if (base.HitBox_0.IsActive)
         {
             PrepareAnAttack(SM64Attacks[k]);
+            SM64Attacks[k].OnAnimationStart();
         }
     }
 
