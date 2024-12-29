@@ -75,17 +75,71 @@ public class Mario64Control : BaseCharacter
                     Owner = this,
                     Tag = base.tag,
                     Damage = 2f,
-                    HitStun = 0.5f,
-                    BlockStun = 0.25f,
+                    HitStun = 0.65f,
                     Launch = new Vector2(6 * FaceDir, 2),
                     FreezeTime = 0.15f,
-                    Priority = BattleCache.PriorityType.Light,
+                    Priority = BattleCache.PriorityType.Medium,
                     HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
             base.HitBox_0.transform.localPosition = new Vector2(0.4f, 0);
             base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.8f);
+        }
+    };
+
+    private AttackBundle AttBun_GroundPoundAir => new AttackBundle
+    {
+        AnimationName = "GroundPoundAir",
+        OnAnimationStart = delegate
+        {
+            SetPlayerState(PlayerStateENUM.Attacking);
+            typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                new HitBoxDamageParameters
+                {
+                    Owner = this,
+                    Tag = base.tag,
+                    Damage = 2f,
+                    HitStun = 0.5f,
+                    GetLaunch = () => new Vector2(0f, Mathf.Lerp(-5f, -15f, (base.transform.position.y - GetGroundPositionViaRaycast().y) / 5f)),
+                    FreezeTime = 0.15f,
+                    Priority = BattleCache.PriorityType.Medium,
+                    HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                    OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
+                }
+            );
+            base.HitBox_0.transform.localPosition = new Vector2(0, -0.3f);
+            base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.4f);
+            Comp_InterplayerCollider.Disable();
+        }
+    };
+
+    private AttackBundle AttBun_GroundPound => new AttackBundle
+    {
+        AnimationName = "GroundPound",
+        OnAnimationStart = delegate
+        {
+            SetPlayerState(PlayerStateENUM.Attacking);
+            typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                new HitBoxDamageParameters
+                {
+                    Owner = this,
+                    Tag = base.tag,
+                    Damage = 3f,
+                    HitStun = 0.6f,
+                    BlockStun = 0.1f,
+                    Launch = new Vector2(3f, 10f),
+                    BlockedLaunch = new Vector2(3f, 0f),
+                    IsLaunchPositionBased = true,
+                    FreezeTime = 0.15f,
+                    Priority = BattleCache.PriorityType.Light,
+                    HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                    OnHitSoundEffect = SoundCache.ins.Battle_Hit_3A
+                }
+            );
+            base.HitBox_0.transform.localPosition = new Vector2(0, -0.3f);
+            base.HitBox_0.transform.localScale = new Vector2(1f, 0.5f);
+            Comp_InterplayerCollider.Enable();
         }
     };
 
@@ -165,6 +219,9 @@ public class Mario64Control : BaseCharacter
         SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_MOVE_PUNCHING, 2), AttBun_Punch1);
         SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_MOVE_PUNCHING, 5), AttBun_Punch2);
         SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_MOVE_PUNCHING, 6), AttBun_GroundKick);
+
+        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_GROUND_POUND, 0), AttBun_GroundPoundAir);
+        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_GROUND_POUND_LAND, 0), AttBun_GroundPound);
     }
 
     public void SetPlayerState(PlayerStateENUM state)
@@ -183,6 +240,9 @@ public class Mario64Control : BaseCharacter
         {
             Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control: {e}");
         }
+
+        if (sm64.marioState.action == SM64Constants.ACT_GROUND_POUND)
+            base.HitBox_0.IsActive = (sm64.marioState.velocity[1] < -50f);
     }
 
     public override void UpdateSpriteSortOrder(int value)
