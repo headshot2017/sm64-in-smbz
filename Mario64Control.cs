@@ -3,7 +3,8 @@ using MelonLoader;
 using System;
 using System.Reflection;
 using UnityEngine;
-using ActionArgKey = System.Collections.Generic.KeyValuePair<uint, uint>;
+using static BaseCharacter;
+using TwoUintPair = System.Collections.Generic.KeyValuePair<uint, uint>;
 
 public class Mario64Control : BaseCharacter
 {
@@ -15,40 +16,86 @@ public class Mario64Control : BaseCharacter
         AnimationName = "Punch1",
         OnAnimationStart = delegate
         {
-            try
-            {
-                Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control attack!");
-                GetType().GetField("PlayerState", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, PlayerStateENUM.Attacking);
-                bool IsFacingRight = (bool)GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
-                typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
-                    new HitBoxDamageParameters
-                    {
-                        Owner = this,
-                        Tag = base.tag,
-                        Damage = 1f,
-                        HitStun = 0.25f,
-                        BlockStun = 0.25f,
-                        Launch = new Vector2(2 * (IsFacingRight ? 1 : (-1)), 0f),
-                        FreezeTime = 0.03f,
-                        Priority = BattleCache.PriorityType.Light,
-                        HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
-                        OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
-                    }
-                );
-                base.HitBox_0.transform.localPosition = new Vector2(-0.5f, 0);
-                base.HitBox_0.transform.localScale = new Vector2(1, 1);
-            }
-            catch (Exception e)
-            {
-                Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control attack: {e}");
-            }
+            SetPlayerState(PlayerStateENUM.Attacking);
+            typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                new HitBoxDamageParameters
+                {
+                    Owner = this,
+                    Tag = base.tag,
+                    Damage = 1f,
+                    HitStun = 0.25f,
+                    BlockStun = 0.25f,
+                    Launch = new Vector2(2 * FaceDir, 0),
+                    FreezeTime = 0.03f,
+                    Priority = BattleCache.PriorityType.Light,
+                    HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                    OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
+                }
+            );
+            base.HitBox_0.transform.localPosition = new Vector2(0.4f, 0);
+            base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.8f);
         }
     };
 
-    private Dictionary<ActionArgKey, AttackBundle> SM64Attacks = new();
+    private AttackBundle AttBun_Punch2 => new AttackBundle
+    {
+        AnimationName = "Punch2",
+        OnAnimationStart = delegate
+        {
+            SetPlayerState(PlayerStateENUM.Attacking);
+            typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                new HitBoxDamageParameters
+                {
+                    Owner = this,
+                    Tag = base.tag,
+                    Damage = 1f,
+                    HitStun = 0.25f,
+                    BlockStun = 0.25f,
+                    Launch = new Vector2(2 * FaceDir, 0),
+                    FreezeTime = 0.07f,
+                    Priority = BattleCache.PriorityType.Light,
+                    HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                    OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
+                }
+            );
+            base.HitBox_0.transform.localPosition = new Vector2(0.4f, 0);
+            base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.8f);
+        }
+    };
+
+    private AttackBundle AttBun_GroundKick => new AttackBundle
+    {
+        AnimationName = "GroundKick",
+        OnAnimationStart = delegate
+        {
+            SetPlayerState(PlayerStateENUM.Attacking);
+            typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                new HitBoxDamageParameters
+                {
+                    Owner = this,
+                    Tag = base.tag,
+                    Damage = 2f,
+                    HitStun = 0.5f,
+                    BlockStun = 0.25f,
+                    Launch = new Vector2(6 * FaceDir, 2),
+                    FreezeTime = 0.15f,
+                    Priority = BattleCache.PriorityType.Light,
+                    HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                    OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
+                }
+            );
+            base.HitBox_0.transform.localPosition = new Vector2(0.4f, 0);
+            base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.8f);
+        }
+    };
+
+    private Dictionary<TwoUintPair, AttackBundle> SM64AttacksActionArg = new();
+    private Dictionary<TwoUintPair, AttackBundle> SM64AttacksAnimFrame = new();
 
     private Animator Comp_Animator;
     private Rigidbody2D Comp_Rigidbody2D;
+
+    private int InitiatedAttackType;
 
     protected override void Awake()
     {
@@ -72,6 +119,8 @@ public class Mario64Control : BaseCharacter
 
 
         Melon<SMBZ_64.Core>.Logger.Msg("Mario64Control Awakened");
+        Comp_Animator = GetComponent<Animator>();
+        Comp_Rigidbody2D = GetComponent<Rigidbody2D>();
         AerialAcceleration = 0f;
         GroundedAcceleration = 0f;
         GroundedDrag = 0f;
@@ -79,6 +128,7 @@ public class Mario64Control : BaseCharacter
         JumpChargeMax = 0f;
         Pursue_Speed = 25f;
         Pursue_StartupDelay = 0.1f;
+        InitiatedAttackType = 0;
 
         Type type = typeof(Mario64Control);
         FieldInfo EnergyMaxField = type.GetField("EnergyMax", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -95,8 +145,6 @@ public class Mario64Control : BaseCharacter
             base.Start();
             base.HitBox_0 = base.transform.Find("HitBox_0").GetComponent<HitBox>();
             base.HitBox_0.tag = base.tag;
-            Comp_Animator = GetComponent<Animator>();
-            Comp_Rigidbody2D = GetComponent<Rigidbody2D>();
             SoundEffect_Jump = null;
         }
         catch (Exception e)
@@ -108,9 +156,20 @@ public class Mario64Control : BaseCharacter
 
     private void Setup_Attacks()
     {
-        SM64Attacks.Clear();
-        SM64Attacks.Add(new ActionArgKey(SM64Constants.ACT_PUNCHING, 2), AttBun_Punch1);
-        SM64Attacks.Add(new ActionArgKey(SM64Constants.ACT_MOVE_PUNCHING, 2), AttBun_Punch1);
+        SM64AttacksActionArg.Clear();
+        SM64AttacksAnimFrame.Clear();
+
+        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_PUNCHING, 2), AttBun_Punch1);
+        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_PUNCHING, 5), AttBun_Punch2);
+        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_PUNCHING, 6), AttBun_GroundKick);
+        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_MOVE_PUNCHING, 2), AttBun_Punch1);
+        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_MOVE_PUNCHING, 5), AttBun_Punch2);
+        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_MOVE_PUNCHING, 6), AttBun_GroundKick);
+    }
+
+    public void SetPlayerState(PlayerStateENUM state)
+    {
+        GetType().GetField("PlayerState", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, state);
     }
 
     protected override void Update()
@@ -131,39 +190,77 @@ public class Mario64Control : BaseCharacter
         // empty
     }
 
-    /*
-    public new void PrepareAnAttack(AttackBundle AttackToPrepare, float MinimumPrepTime = 0f)
+    protected override void Update_General()
     {
-        CurrentAttackData = AttackToPrepare;
-        Melon<SMBZ_64.Core>.Logger.Msg($"get coroutine");
-        Coroutine Coroutine_GroundedOnLandingFallback = (Coroutine)GetType().GetProperty("Coroutine_GroundedOnLandingFallback", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
-        Melon<SMBZ_64.Core>.Logger.Msg($"check coroutine");
-        if (Coroutine_GroundedOnLandingFallback != null)
-        {
-            Melon<SMBZ_64.Core>.Logger.Msg($"stop coroutine");
-            StopCoroutine(Coroutine_GroundedOnLandingFallback);
-        }
-
-        Melon<SMBZ_64.Core>.Logger.Msg($"start coroutine");
-        GetType().GetProperty("Coroutine_GroundedOnLandingFallback", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, StartCoroutine(GroundedOnLandingFallback()));
+        base.Update_General();
+        Update_ReadAttackInput();
     }
-    */
+
+    private void Perform_PeaceSignTaunt()
+    {
+        sm64.SetAction(SM64Constants.ACT_STAR_DANCE_EXIT);
+        sm64.SetAnim(SM64Constants.MarioAnimID.MARIO_ANIM_STAR_DANCE);
+        sm64.SetAnimFrame(35);
+        sm64.SetActionTimer(36);
+    }
+
+    protected override void Perform_Grounded_NeutralTaunt()
+    {
+        Perform_PeaceSignTaunt();
+    }
+
+    protected override void Perform_Grounded_UpTaunt()
+    {
+        Perform_PeaceSignTaunt();
+    }
+
+    protected override void Perform_Grounded_DownTaunt()
+    {
+        Perform_PeaceSignTaunt();
+    }
+
 
     public void OnChangeSM64Action(uint action, uint actionArg)
     {
-        ActionArgKey k = new ActionArgKey(action, actionArg);
+        TwoUintPair k = new TwoUintPair(action, actionArg);
         Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control action 0x{action:X} {actionArg}");
-        base.HitBox_0.IsActive = SM64Attacks.ContainsKey(k);
-        if (base.HitBox_0.IsActive)
+        if (SM64AttacksActionArg.ContainsKey(k))
         {
-            PrepareAnAttack(SM64Attacks[k]);
-            SM64Attacks[k].OnAnimationStart();
+            PrepareAnAttack(SM64AttacksActionArg[k]);
+            SM64AttacksActionArg[k].OnAnimationStart();
+            base.HitBox_0.IsActive = true;
+            InitiatedAttackType = 1;
+        }
+        else if (InitiatedAttackType == 1)
+        {
+            SetPlayerState(PlayerStateENUM.Idle);
+            InitiatedAttackType = 0;
+            base.HitBox_0.IsActive = false;
+        }
+    }
+
+    public void OnMarioAdvanceAnimFrame(uint action, short animFrame)
+    {
+        TwoUintPair k = new TwoUintPair(action, (uint)animFrame);
+        if (SM64AttacksAnimFrame.ContainsKey(k))
+        {
+            PrepareAnAttack(SM64AttacksAnimFrame[k]);
+            SM64AttacksAnimFrame[k].OnAnimationStart();
+            base.HitBox_0.IsActive = true;
+            InitiatedAttackType = 2;
+        }
+        else if (InitiatedAttackType == 2)
+        {
+            SetPlayerState(PlayerStateENUM.Idle);
+            InitiatedAttackType = 0;
+            base.HitBox_0.IsActive = false;
         }
     }
 
     public override void Hurt(HitBox AttackingHitBox)
     {
         base.Hurt(AttackingHitBox);
+        InitiatedAttackType = 0;
 
         if (!IsHurt || sm64 == null)
             return;
@@ -177,11 +274,10 @@ public class Mario64Control : BaseCharacter
 
     public override void OnDeath()
     {
-        Melon<SMBZ_64.Core>.Logger.Msg("Mario64Control OnDeath");
         base.OnDeath();
+        Interop.PlaySound(SM64Constants.SOUND_MARIO_WAAAOOOW);
 
         if (sm64 == null) return;
         sm64.Kill();
-        Interop.PlaySound(SM64Constants.SOUND_MARIO_WAAAOOOW);
     }
 }

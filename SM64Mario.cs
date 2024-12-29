@@ -27,6 +27,7 @@ namespace LibSM64
         float tick;
         public CharacterControl smbzChar;
         public Action<SM64Mario> changeActionCallback = null;
+        public Action<SM64Mario> advanceAnimFrameCallback = null;
 
         public bool spawned { get { return marioId != -1; } }
 
@@ -128,10 +129,36 @@ namespace LibSM64
             Interop.MarioSetFaceAngle(marioId, angle);
         }
 
+        public void SetAction(uint action)
+        {
+            Interop.MarioSetAction(marioId, action);
+        }
+
+        public void SetAction(uint action, uint actionArg)
+        {
+            Interop.MarioSetAction(marioId, action, actionArg);
+        }
+
+        public void SetActionTimer(uint actionTimer)
+        {
+            Interop.MarioSetActionTimer(marioId, actionTimer);
+        }
+
+        public void SetAnim(SM64Constants.MarioAnimID animID)
+        {
+            Interop.MarioSetAnim(marioId, animID);
+        }
+
+        public void SetAnimFrame(short frame)
+        {
+            Interop.MarioSetAnimFrame(marioId, frame);
+        }
+
         public void contextFixedUpdate()
         {
             uint oldAction = marioState.action;
             uint oldActionArg = marioState.actionArg;
+            short oldFrame = marioState.animFrame;
 
             tick += Time.fixedDeltaTime;
             while (tick >= 1 / 30f)
@@ -183,6 +210,10 @@ namespace LibSM64
             if (changeActionCallback != null && (oldAction != marioState.action || oldActionArg != marioState.actionArg))
             {
                 changeActionCallback(this);
+            }
+            if (advanceAnimFrameCallback != null && oldFrame != marioState.animFrame)
+            {
+                advanceAnimFrameCallback(this);
             }
         }
 

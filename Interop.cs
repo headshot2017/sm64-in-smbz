@@ -183,6 +183,8 @@ namespace LibSM64
         [DllImport("sm64")]
         static extern void sm64_set_mario_action_arg(int marioId, uint action, uint actionArg);
         [DllImport("sm64")]
+        static extern void sm64_set_mario_action_timer(int marioId, uint actionTimer);
+        [DllImport("sm64")]
         static extern void sm64_set_mario_animation(int marioId, int animID);
         [DllImport("sm64")]
         static extern void sm64_set_mario_anim_frame(int marioId, short animFrame);
@@ -406,6 +408,31 @@ namespace LibSM64
         public static void MarioSetFaceAngle(int marioId, float angle)
         {
             sm64_set_mario_faceangle(marioId, angle);
+        }
+
+        public static void MarioSetAction(int marioId, uint action)
+        {
+            sm64_set_mario_action(marioId, action);
+        }
+
+        public static void MarioSetAction(int marioId, uint action, uint actionArg)
+        {
+            sm64_set_mario_action_arg(marioId, action, actionArg);
+        }
+
+        public static void MarioSetActionTimer(int marioId, uint actionTimer)
+        {
+            sm64_set_mario_action_timer(marioId, actionTimer);
+        }
+
+        public static void MarioSetAnim(int marioId, SM64Constants.MarioAnimID animID)
+        {
+            sm64_set_mario_animation(marioId, (int)animID);
+        }
+
+        public static void MarioSetAnimFrame(int marioId, short animFrame)
+        {
+            sm64_set_mario_anim_frame(marioId, animFrame);
         }
 
         public static void PlaySound(uint soundBits, Vector3 pos)

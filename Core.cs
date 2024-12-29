@@ -239,6 +239,7 @@ namespace SMBZ_64
 
                     mario.smbzChar = smbzControl;
                     mario.changeActionCallback = OnMarioChangeAction;
+                    mario.advanceAnimFrameCallback = OnMarioAdvanceAnimFrame;
                     mario.SetMaterial(m);
                     mario.SetFaceAngle((float)Math.PI / 2 * (i == 1 ? -1 : 1));
                     RegisterMario(mario);
@@ -261,6 +262,15 @@ namespace SMBZ_64
 
             Mario64Control character = (Mario64Control)o.smbzChar.CharacterGO;
             character.OnChangeSM64Action(action, actionArg);
+        }
+
+        static void OnMarioAdvanceAnimFrame(SM64Mario o)
+        {
+            uint action = o.marioState.action;
+            short animFrame = o.marioState.animFrame;
+
+            Mario64Control character = (Mario64Control)o.smbzChar.CharacterGO;
+            character.OnMarioAdvanceAnimFrame(action, animFrame);
         }
     }
 }
