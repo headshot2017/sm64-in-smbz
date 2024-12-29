@@ -261,7 +261,6 @@ namespace SMBZ_64
 
             Mario64Control character = (Mario64Control)o.smbzChar.CharacterGO;
             character.OnChangeSM64Action(action, actionArg);
-            Melon<Core>.Logger.Msg($"{o} {o.smbzChar} {action} {actionArg}");
         }
     }
 }

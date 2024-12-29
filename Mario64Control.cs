@@ -2,11 +2,47 @@
 using MelonLoader;
 using System.Reflection;
 using UnityEngine;
+using ActionArgKey = System.Collections.Generic.KeyValuePair<uint, uint>;
 
 public class Mario64Control : BaseCharacter
 {
     public SM64Mario sm64 = null;
     public SM64InputSMBZG sm64input = null;
+
+    private AttackBundle AttBun_Punch1 => new AttackBundle
+    {
+        AnimationName = "Punch1",
+        OnAnimationStart = delegate
+        {
+            try
+            {
+                GetType().GetField("PlayerState", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, PlayerStateENUM.Attacking);
+                PlaySoundForMelee(SoundCache.ins.Battle_Swish_Light);
+                bool IsFacingRight = (bool)GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+                typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                    new HitBoxDamageParameters
+                    {
+                        Owner = this,
+                        Tag = base.tag,
+                        Damage = 1f,
+                        HitStun = 0.25f,
+                        BlockStun = 0.25f,
+                        Launch = new Vector2(2 * (IsFacingRight ? 1 : (-1)), 0f),
+                        FreezeTime = 0.03f,
+                        Priority = BattleCache.PriorityType.Light,
+                        HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                        OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
+                    }
+                );
+            }
+            catch (Exception e)
+            {
+                Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control attack: {e}");
+            }
+        }
+    };
+
+    private Dictionary<ActionArgKey, AttackBundle> SM64Attacks = new();
 
     protected override void Awake()
     {
@@ -16,8 +52,7 @@ public class Mario64Control : BaseCharacter
         AdditionalCharacterSpriteList = new List<SpriteRenderer>();
         SupportingSpriteList = new List<SpriteRenderer>();
 
-
-
+        Setup_Attacks();
 
         try
         {
@@ -63,6 +98,13 @@ public class Mario64Control : BaseCharacter
         Melon<SMBZ_64.Core>.Logger.Msg("Mario64Control Started");
     }
 
+    private void Setup_Attacks()
+    {
+        SM64Attacks.Clear();
+        SM64Attacks.Add(new ActionArgKey(SM64Constants.ACT_PUNCHING, 2), AttBun_Punch1);
+        SM64Attacks.Add(new ActionArgKey(SM64Constants.ACT_MOVE_PUNCHING, 2), AttBun_Punch1);
+    }
+
     protected override void Update()
     {
         try
@@ -82,7 +124,12 @@ public class Mario64Control : BaseCharacter
 
     public void OnChangeSM64Action(uint action, uint actionArg)
     {
-
+        ActionArgKey k = new ActionArgKey(action, actionArg);
+        Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control action 0x{action:X} {actionArg}");
+        if (SM64Attacks.ContainsKey(k))
+        {
+            PrepareAnAttack(SM64Attacks[k]);
+        }
     }
 
     public override void Hurt(HitBox AttackingHitBox)
@@ -92,9 +139,8 @@ public class Mario64Control : BaseCharacter
         if (!IsHurt || sm64 == null)
             return;
 
-        Type type = typeof(HitBox);
-        FieldInfo damagePropField = type.GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance);
-        HitBoxDamageParameters damageProperties = (HitBoxDamageParameters)damagePropField.GetValue(AttackingHitBox);
+        HitBoxDamageParameters damageProperties =
+            (HitBoxDamageParameters)typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(AttackingHitBox);
 
         Vector2 to = ((damageProperties.Owner == null) ? AttackingHitBox.transform.position : damageProperties.Owner.transform.position);
         sm64.TakeDamage((uint)(damageProperties.Damage * 3), 0, new Vector3(to.x, to.y, -1));
