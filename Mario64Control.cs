@@ -105,7 +105,6 @@ public class Mario64Control : BaseCharacter
                     GetLaunch = () => new Vector2(0f, Mathf.Lerp(-5f, -15f, (base.transform.position.y - GetGroundPositionViaRaycast().y) / 5f)),
                     FreezeTime = 0.15f,
                     Priority = BattleCache.PriorityType.Medium,
-                    IsUnblockable = true,
                     HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
@@ -182,13 +181,14 @@ public class Mario64Control : BaseCharacter
                 {
                     Owner = this,
                     Tag = base.tag,
-                    Damage = 3f,
+                    Damage = 2f,
                     HitStun = 0.5f,
                     Launch = new Vector2(7f, 8f),
                     BlockedLaunch = new Vector2(3f, 0f),
                     IsLaunchPositionBased = true,
                     FreezeTime = 0.03f,
                     Priority = BattleCache.PriorityType.Light,
+                    IsUnblockable = true,
                     HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
@@ -210,13 +210,14 @@ public class Mario64Control : BaseCharacter
                 {
                     Owner = this,
                     Tag = base.tag,
-                    Damage = 3f,
+                    Damage = 2f,
                     HitStun = 0.5f,
                     Launch = new Vector2(7f, 8f),
                     BlockedLaunch = new Vector2(3f, 0f),
                     IsLaunchPositionBased = true,
                     FreezeTime = 0.03f,
                     Priority = BattleCache.PriorityType.Light,
+                    IsUnblockable = true,
                     HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
@@ -238,7 +239,7 @@ public class Mario64Control : BaseCharacter
                 {
                     Owner = this,
                     Tag = base.tag,
-                    Damage = 3f,
+                    Damage = 2.5f,
                     HitStun = 0.6f,
                     GetLaunch = () => new Vector2(-sm64.marioState.velocity[0]/3, sm64.marioState.velocity[1]/3),
                     FreezeTime = 0.1f,
@@ -288,7 +289,7 @@ public class Mario64Control : BaseCharacter
                 {
                     Owner = this,
                     Tag = base.tag,
-                    Damage = 3f,
+                    Damage = 2.5f,
                     HitStun = 0.7f,
                     GetLaunch = () => new Vector2(-sm64.marioState.velocity[0] / 3, 0),
                     FreezeTime = 0.1f,
@@ -461,11 +462,30 @@ public class Mario64Control : BaseCharacter
         Update_ReadAttackInput();
     }
 
+    protected override void Update_Pursue()
+    {
+        FieldInfo PursueDataField = GetType().GetField("PursueData", BindingFlags.NonPublic | BindingFlags.Instance);
+        PursueBundle PursueData = (PursueBundle)PursueDataField.GetValue(this);
+        bool IsFrozen = (bool)GetType().GetField("IsFrozen", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+
+        if (IsFrozen || PursueData == null)
+        {
+            return;
+        }
+
+        if (PursueData.Target == null)
+        {
+            PursueData.Target = FindClosestTarget();
+        }
+
+        Melon<SMBZ_64.Core>.Logger.Msg($"pursue update");
+    }
+
     private void Perform_PeaceSignTaunt()
     {
         if (sm64 == null) return;
         sm64.SetAction(SM64Constants.ACT_STAR_DANCE_EXIT);
-        sm64.SetAnim(SM64Constants.MarioAnimID.MARIO_ANIM_STAR_DANCE);
+        sm64.SetAnim(MARIO_ANIM_STAR_DANCE);
         sm64.SetAnimFrame(35);
         sm64.SetActionTimer(36);
     }
