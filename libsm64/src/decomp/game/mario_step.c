@@ -284,7 +284,8 @@ static s32 perform_ground_quarter_step(struct MarioState *m, Vec3f nextPos) {
         floor->originOffset = floorHeight; //! Wrong origin offset (no effect)
     }
 
-    if (nextPos[1] > floorHeight + 100.0f) {
+    //if (nextPos[1] > floorHeight + 100.0f) {
+    if (nextPos[1] > floorHeight) {
         if (nextPos[1] + 160.0f >= ceilHeight) {
             return GROUND_STEP_HIT_WALL_STOP_QSTEPS;
         }

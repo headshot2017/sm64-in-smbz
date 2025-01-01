@@ -94,7 +94,7 @@ s16 fake_mario_obj_angle_to_object(struct MarioState *m, float xSrc,float zSrc) 
 u32 fake_determine_knockback_action(struct MarioState *m, s32 damage,float xSrc,float ySrc,float zSrc) {
     u32 bonkAction;
 
-    s16 terrainIndex = 0; // 1 = air, 2 = water, 0 = default
+    s16 terrainIndex = 1; // 1 = air, 2 = water, 0 = default
     s16 strengthIndex = 0;
 
     s16 angleToObject = fake_mario_obj_angle_to_object(m, xSrc,zSrc);
