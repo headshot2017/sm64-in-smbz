@@ -390,6 +390,16 @@ namespace LibSM64
             sm64_set_mario_position(marioId, -pos.x * SCALE_FACTOR, pos.y * SCALE_FACTOR, pos.z * SCALE_FACTOR);
         }
 
+        public static void MarioSetVelocity(int marioId, Vector3 vel)
+        {
+            sm64_set_mario_velocity(marioId, vel.x, vel.y, vel.z);
+        }
+
+        public static void MarioSetForwardVelocity(int marioId, float vel)
+        {
+            sm64_set_mario_forward_velocity(marioId, vel);
+        }
+
         public static void MarioTakeDamage(int marioId, uint damage, uint subtype, Vector3 pos)
         {
             sm64_mario_take_damage(marioId, damage, subtype, -pos.x * SCALE_FACTOR, pos.y * SCALE_FACTOR, pos.z * SCALE_FACTOR);

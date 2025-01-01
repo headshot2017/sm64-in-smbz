@@ -109,6 +109,16 @@ namespace LibSM64
             marioRendererObject.transform.position = position+offset;
         }
 
+        public void SetVelocity(Vector3 vel)
+        {
+            Interop.MarioSetVelocity(marioId, vel);
+        }
+
+        public void SetForwardVelocity(float vel)
+        {
+            Interop.MarioSetForwardVelocity(marioId, vel);
+        }
+
         public void TakeDamage(uint damage, uint subtype, Vector3 pos)
         {
             Interop.MarioTakeDamage(marioId, damage, subtype, pos);
