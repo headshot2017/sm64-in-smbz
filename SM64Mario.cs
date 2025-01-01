@@ -102,11 +102,11 @@ namespace LibSM64
             renderer.sharedMaterial.mainTexture = Interop.marioTexture;
         }
 
-        public void SetPosition(Vector3 position, Vector3 offset)
+        public void SetPosition(Vector3 position)
         {
-            Interop.MarioSetPosition(marioId, position+offset);
-            transform.position = position + offset;
-            marioRendererObject.transform.position = position+offset;
+            Interop.MarioSetPosition(marioId, position);
+            transform.position = position;
+            marioRendererObject.transform.position = position;
         }
 
         public void SetVelocity(Vector3 vel)
