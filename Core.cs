@@ -105,8 +105,12 @@ namespace SMBZ_64
 
                 o.contextUpdate();
 
-                if (o.smbzChar.CharacterGO.IsHurt)
-                    o.SetPosition(o.smbzChar.CharacterGO.transform.position, new Vector3(0, -0.8f, -1));
+                if (o.smbzChar.CharacterGO.IsHurt || o.smbzChar.CharacterGO.IsPursuing)
+                {
+                    Mario64Control character = (Mario64Control)o.smbzChar.CharacterGO;
+                    o.SetPosition(o.smbzChar.CharacterGO.transform.position, new Vector3(0, -0.9f, -1));
+                    o.SetVelocity(new Vector3(0, o.smbzChar.CharacterGO.GetVelocity().y/3, 0));
+                }
                 else
                     o.smbzChar.CharacterGO.transform.position = o.transform.position + new Vector3(0, 0.8f, 0);
             }
