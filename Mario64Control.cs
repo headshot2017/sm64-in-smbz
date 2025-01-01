@@ -11,6 +11,8 @@ public class Mario64Control : BaseCharacter
     public SM64Mario sm64 = null;
     public SM64InputSMBZG sm64input = null;
 
+    public float HitStunStart { get; private set; }
+
     private AttackBundle AttBun_Punch1 => new AttackBundle
     {
         AnimationName = "Punch1",
@@ -32,7 +34,7 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0.4f, 0);
+            base.HitBox_0.transform.localPosition = new Vector2(0.7f, 0);
             base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.8f);
         }
     };
@@ -58,7 +60,7 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0.4f, 0);
+            base.HitBox_0.transform.localPosition = new Vector2(0.7f, 0);
             base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.8f);
         }
     };
@@ -83,7 +85,7 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0.4f, 0);
+            base.HitBox_0.transform.localPosition = new Vector2(0.7f, 0);
             base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.8f);
             base.HitBox_0.IsActive = true;
         }
@@ -248,7 +250,7 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0f, 0f);
+            base.HitBox_0.transform.localPosition = new Vector2(0.35f, 0f);
             base.HitBox_0.transform.localScale = new Vector2(0.6f, 0.6f);
         }
     };
@@ -273,7 +275,7 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0f, 0f);
+            base.HitBox_0.transform.localPosition = new Vector2(0.35f, 0f);
             base.HitBox_0.transform.localScale = new Vector2(0.6f, 0.6f);
         }
     };
@@ -298,8 +300,8 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0f, 0f);
-            base.HitBox_0.transform.localScale = new Vector2(0.6f, 0.6f);
+            base.HitBox_0.transform.localPosition = new Vector2(0.3f, -0.5f);
+            base.HitBox_0.transform.localScale = new Vector2(0.7f, 0.6f);
         }
     };
 
@@ -323,8 +325,8 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0f, 0f);
-            base.HitBox_0.transform.localScale = new Vector2(0.6f, 0.6f);
+            base.HitBox_0.transform.localPosition = new Vector2(0.3f, -0.5f);
+            base.HitBox_0.transform.localScale = new Vector2(0.7f, 0.6f);
         }
     };
 
@@ -467,6 +469,7 @@ public class Mario64Control : BaseCharacter
         FieldInfo PursueDataField = GetType().GetField("PursueData", BindingFlags.NonPublic | BindingFlags.Instance);
         PursueBundle PursueData = (PursueBundle)PursueDataField.GetValue(this);
         bool IsFrozen = (bool)GetType().GetField("IsFrozen", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+        bool IsFacingRight = (bool)GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
 
         if (IsFrozen || PursueData == null)
         {
@@ -478,7 +481,76 @@ public class Mario64Control : BaseCharacter
             PursueData.Target = FindClosestTarget();
         }
 
-        Melon<SMBZ_64.Core>.Logger.Msg($"pursue update");
+        
+        /*
+        PursueData.StartupCountdown = Mathf.Clamp(PursueData.StartupCountdown - Time.deltaTime, 0f, float.MaxValue);
+        PursueData.PursueCountdown = Mathf.Clamp(PursueData.PursueCountdown - Time.deltaTime, 0f, float.MaxValue);
+        if (PursueData.IsPreping)
+        {
+            if (CurrentAttackData == null && !IsCurrentAnimationStateEqualTo(Animations.PrePursue, Animations.PrePursueRoll))
+            {
+                Comp_Animator.Play(base.IsOnGround ? Animations.PrePursue : Animations.PrePursueRoll, -1, 0f);
+            }
+
+            if (ContactGround && PursueData.StartupCountdown <= 0f)
+            {
+                PursueData.StartupCountdown = 0.15f;
+            }
+
+            if (PursueData.StartupCountdown <= 0f && (!PursueData.isCharging || (PursueData.isCharging && PursueData.ChargePower >= 100f)) && base.IsOnGround)
+            {
+                PursueData.PursueCountdown = 10f;
+                PursueData.IsPursuing = true;
+                PursueData.IsPreping = false;
+                PursueData.isCharging = false;
+                PlayerState = PlayerStateENUM.Pursuing;
+                ComboSwingCounter = 0;
+                float num = Helpers.Vector2ToDegreeAngle_180(base.transform.position, PursueData.Target.transform.position);
+                IsFacingRight = -90f <= num && num <= 90f;
+                PursueData.Direction = (IsFacingRight ? Vector2.right : Vector2.left);
+                SoundCache.ins.PlaySound((PursueData.ChargePower >= 100f) ? SoundCache.ins.Battle_Zoom : SoundCache.ins.Battle_Leap_DBZ);
+                Comp_Animator.Play(Animations.Pursue, -1, 0f);
+                EffectSprite.Create(groundCheck.position, EffectSprite.Sprites.DustPuff, IsFacingRight);
+                OnPursueStart();
+            }
+        }
+        else if (PursueData.Target == null)
+        {
+            StartCoroutine(OnPursueMiss());
+        }
+        else if (PursueData.IsPursuing)
+        {
+            if (PursueData.IsHoming)
+            {
+                Vector3 vector = PursueData.Target.transform.position - base.transform.position;
+                PursueData.Direction = vector / vector.magnitude;
+            }
+
+            bool num2 = Vector2.Distance(base.transform.position, PursueData.Target.transform.position) < 1.2f;
+            bool flag = (IsFacingRight ? (PursueData.Target.transform.position.x + 1f < base.transform.position.x) : (base.transform.position.x < PursueData.Target.transform.position.x - 1f));
+            if (ContactGround && Comp_Rigidbody2D.velocity.y < -1f && Mathf.Abs(Comp_Rigidbody2D.velocity.x) < 3f)
+            {
+                PursueData.Direction = new Vector2((float)((PursueData.Direction.x > 0f) ? 1 : (-1)) * (Mathf.Abs(PursueData.Direction.x) + Mathf.Abs(PursueData.Direction.y)), 0f);
+            }
+
+            if (num2)
+            {
+                float value = MaxMoveSpeed.GetValue();
+                SetVelocity(PursueData.Direction.x * value, Mathf.Clamp(Comp_Rigidbody2D.velocity.y, 0f - value, value));
+                StartCoroutine(OnPursueContact());
+            }
+            else if (PursueData.PursueCountdown == 0f || flag)
+            {
+                StartCoroutine(OnPursueMiss());
+            }
+            else
+            {
+                SetVelocity(PursueData.Direction * PursueData.Speed);
+            }
+        }
+        */
+
+        PursueDataField.SetValue(this, PursueData);
     }
 
     private void Perform_PeaceSignTaunt()
@@ -545,6 +617,8 @@ public class Mario64Control : BaseCharacter
 
         Vector2 to = ((damageProperties.Owner == null) ? AttackingHitBox.transform.position : damageProperties.Owner.transform.position);
         sm64.TakeDamage((uint)(damageProperties.Damage * 3), 0, new Vector3(to.x, to.y, -1));
+
+        HitStunStart = (damageProperties.GetHitStun != null) ? damageProperties.GetHitStun() : damageProperties.HitStun;
     }
 
     public override void OnDeath()
