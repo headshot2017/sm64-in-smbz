@@ -21,6 +21,10 @@ namespace LibSM64
     {
         public CharacterControl c = null;
 
+        public bool overrideInput = false;
+        public Vector2 joyOverride;
+        public HashSet<Button> buttonOverride = new HashSet<Button>();
+
         public override Vector3 GetCameraLookDirection()
         {
             return new Vector3(0,0,-1);
@@ -28,17 +32,18 @@ namespace LibSM64
 
         public override Vector2 GetJoystickAxes()
         {
+            if (overrideInput)
+                return joyOverride;
             if (c.IsInputLocked)
                 return new Vector2(0,0);
 
-            return new Vector2(
-                (c.Button_Left.IsHeld) ? 1 : (c.Button_Right.IsHeld) ? -1 : 0,
-                0
-            );
+            return -((c.Button_Left.IsHeld) ? Vector2.left : (c.Button_Right.IsHeld) ? Vector2.right : Vector2.zero);
         }
 
         public override bool GetButtonHeld(Button button)
         {
+            if (overrideInput)
+                return buttonOverride.Contains(button);
             if (c.IsInputLocked)
                 return false;
 
