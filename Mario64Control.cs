@@ -250,7 +250,7 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0.35f, 0f);
+            base.HitBox_0.transform.localPosition = new Vector2(0.3f, 0f);
             base.HitBox_0.transform.localScale = new Vector2(0.6f, 0.6f);
         }
     };
@@ -275,7 +275,7 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0.35f, 0f);
+            base.HitBox_0.transform.localPosition = new Vector2(0.3f, 0f);
             base.HitBox_0.transform.localScale = new Vector2(0.6f, 0.6f);
         }
     };
