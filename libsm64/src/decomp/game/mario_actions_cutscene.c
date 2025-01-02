@@ -676,8 +676,13 @@ s32 act_star_dance(struct MarioState *m) {
     //                                           : MARIO_ANIM_STAR_DANCE);
     set_mario_animation(m, MARIO_ANIM_STAR_DANCE);
     general_star_dance_handler(m, 0);
-    if (!m->actionArg && m->actionState != 2 && m->actionTimer >= 40) {
-        m->marioBodyState->handState = MARIO_HAND_PEACE_SIGN;
+    if (m->actionState != 2 && m->actionTimer >= 40) {
+        if (!m->actionArg)
+            m->marioBodyState->handState = MARIO_HAND_PEACE_SIGN;
+        else if (m->actionTimer == 40)
+            m->marioBodyState->punchState = (0 << 6) | 4;
+        else if ((m->marioBodyState->punchState & 0x3F) > 0)
+            m->marioBodyState->punchState--;
     }
     stop_and_set_height_to_floor(m);
     return FALSE;
