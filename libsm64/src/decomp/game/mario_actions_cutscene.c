@@ -657,7 +657,7 @@ void general_star_dance_handler(struct MarioState *m, s32 isInWater) {
 //          save_file_do_save(gCurrSaveFileNum - 1);
 //      }
         m->actionState = 2;
-    } else if (m->actionState == 2 && is_anim_at_end(m)) {
+    } else if ((m->actionArg || m->actionState == 2) && is_anim_at_end(m)) {
 //      disable_time_stop();
 //      enable_background_sound();
 //      dialogID = get_star_collection_dialog(m);
@@ -672,6 +672,8 @@ void general_star_dance_handler(struct MarioState *m, s32 isInWater) {
 
 s32 act_star_dance(struct MarioState *m) {
     if (!m->actionArg) m->faceAngle[1] = m->area->camera->yaw;
+    else m->actionState = 2;
+
     //set_mario_animation(m, m->actionState == 2 ? MARIO_ANIM_RETURN_FROM_STAR_DANCE
     //                                           : MARIO_ANIM_STAR_DANCE);
     set_mario_animation(m, MARIO_ANIM_STAR_DANCE);
