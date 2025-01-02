@@ -437,6 +437,11 @@ public class Mario64Control : BaseCharacter
         GetType().GetField("PlayerState", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, state);
     }
 
+    public PlayerStateENUM GetPlayerState()
+    {
+        return (PlayerStateENUM)GetType().GetField("PlayerState", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+    }
+
     protected override void Update()
     {
         try
@@ -468,28 +473,38 @@ public class Mario64Control : BaseCharacter
     {
         FieldInfo PursueDataField = GetType().GetField("PursueData", BindingFlags.NonPublic | BindingFlags.Instance);
         PursueBundle PursueData = (PursueBundle)PursueDataField.GetValue(this);
+        FieldInfo isChargingField = typeof(PursueBundle).GetField("isCharging", BindingFlags.NonPublic | BindingFlags.Instance);
+        FieldInfo IsFacingRightField = GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance);
+        MethodInfo PlaySoundMethod = typeof(SoundCache).GetMethod("PlaySound", BindingFlags.NonPublic | BindingFlags.Instance, null, new[]{typeof(AudioClip), typeof(float), typeof(bool), typeof(float?), typeof(float), typeof(bool)}, null);
         bool IsFrozen = (bool)GetType().GetField("IsFrozen", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
-        bool IsFacingRight = (bool)GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
 
         if (IsFrozen || PursueData == null)
         {
             return;
         }
 
+        sm64input.overrideInput = true;
+        sm64input.joyOverride = -((bool)IsFacingRightField.GetValue(this) ? Vector2.right : Vector2.left);
+        if (sm64.marioState.action != SM64Constants.ACT_WALKING)
+            sm64.SetAction(SM64Constants.ACT_WALKING);
+
         if (PursueData.Target == null)
         {
             PursueData.Target = FindClosestTarget();
         }
-
         
-        /*
         PursueData.StartupCountdown = Mathf.Clamp(PursueData.StartupCountdown - Time.deltaTime, 0f, float.MaxValue);
         PursueData.PursueCountdown = Mathf.Clamp(PursueData.PursueCountdown - Time.deltaTime, 0f, float.MaxValue);
         if (PursueData.IsPreping)
         {
-            if (CurrentAttackData == null && !IsCurrentAnimationStateEqualTo(Animations.PrePursue, Animations.PrePursueRoll))
+            if (CurrentAttackData == null)
             {
-                Comp_Animator.Play(base.IsOnGround ? Animations.PrePursue : Animations.PrePursueRoll, -1, 0f);
+                //Comp_Animator.Play(base.IsOnGround ? Animations.PrePursue : Animations.PrePursueRoll, -1, 0f);
+            }
+
+            if ((bool)isChargingField.GetValue(PursueData))
+            {
+                sm64.SetForwardVelocity(0);
             }
 
             if (ContactGround && PursueData.StartupCountdown <= 0f)
@@ -497,20 +512,22 @@ public class Mario64Control : BaseCharacter
                 PursueData.StartupCountdown = 0.15f;
             }
 
-            if (PursueData.StartupCountdown <= 0f && (!PursueData.isCharging || (PursueData.isCharging && PursueData.ChargePower >= 100f)) && base.IsOnGround)
+            if (PursueData.StartupCountdown <= 0f && (!(bool)isChargingField.GetValue(PursueData) || ((bool)isChargingField.GetValue(PursueData) && PursueData.ChargePower >= 100f)) && base.IsOnGround)
             {
                 PursueData.PursueCountdown = 10f;
                 PursueData.IsPursuing = true;
                 PursueData.IsPreping = false;
-                PursueData.isCharging = false;
-                PlayerState = PlayerStateENUM.Pursuing;
-                ComboSwingCounter = 0;
+                isChargingField.SetValue(PursueData, false);
+                SetPlayerState(PlayerStateENUM.Pursuing);
+                GetType().GetField("ComboSwingCounter", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, 0);
                 float num = Helpers.Vector2ToDegreeAngle_180(base.transform.position, PursueData.Target.transform.position);
-                IsFacingRight = -90f <= num && num <= 90f;
-                PursueData.Direction = (IsFacingRight ? Vector2.right : Vector2.left);
-                SoundCache.ins.PlaySound((PursueData.ChargePower >= 100f) ? SoundCache.ins.Battle_Zoom : SoundCache.ins.Battle_Leap_DBZ);
-                Comp_Animator.Play(Animations.Pursue, -1, 0f);
-                EffectSprite.Create(groundCheck.position, EffectSprite.Sprites.DustPuff, IsFacingRight);
+                IsFacingRightField.SetValue(this, -90f <= num && num <= 90f);
+                PursueData.Direction = ((bool)IsFacingRightField.GetValue(this) ? Vector2.right : Vector2.left);
+                sm64.SetForwardVelocity(15);
+                sm64.SetFaceAngle( ((bool)IsFacingRightField.GetValue(this) ? -0.5f : 0.5f) * (float)Math.PI);
+                sm64input.joyOverride = -PursueData.Direction;
+                PlaySoundMethod.Invoke(SoundCache.ins, new object[]{(PursueData.ChargePower >= 100f) ? SoundCache.ins.Battle_Zoom : SoundCache.ins.Battle_Leap_DBZ, 1f, true, null, 1f, false});
+                EffectSprite.Create(groundCheck.position, EffectSprite.Sprites.DustPuff, (bool)IsFacingRightField.GetValue(this));
                 OnPursueStart();
             }
         }
@@ -527,7 +544,7 @@ public class Mario64Control : BaseCharacter
             }
 
             bool num2 = Vector2.Distance(base.transform.position, PursueData.Target.transform.position) < 1.2f;
-            bool flag = (IsFacingRight ? (PursueData.Target.transform.position.x + 1f < base.transform.position.x) : (base.transform.position.x < PursueData.Target.transform.position.x - 1f));
+            bool flag = ((bool)IsFacingRightField.GetValue(this) ? (PursueData.Target.transform.position.x + 1f < base.transform.position.x) : (base.transform.position.x < PursueData.Target.transform.position.x - 1f));
             if (ContactGround && Comp_Rigidbody2D.velocity.y < -1f && Mathf.Abs(Comp_Rigidbody2D.velocity.x) < 3f)
             {
                 PursueData.Direction = new Vector2((float)((PursueData.Direction.x > 0f) ? 1 : (-1)) * (Mathf.Abs(PursueData.Direction.x) + Mathf.Abs(PursueData.Direction.y)), 0f);
@@ -548,9 +565,90 @@ public class Mario64Control : BaseCharacter
                 SetVelocity(PursueData.Direction * PursueData.Speed);
             }
         }
-        */
 
-        PursueDataField.SetValue(this, PursueData);
+        if (PursueDataField.GetValue(this) != null)
+            PursueDataField.SetValue(this, PursueData);
+    }
+
+    protected override System.Collections.IEnumerator OnPursueMiss()
+    {
+        sm64input.overrideInput = false;
+        return base.OnPursueMiss();
+    }
+
+    protected override System.Collections.IEnumerator OnPursueContact()
+    {
+        yield return new WaitForEndOfFrame();
+
+        FieldInfo PursueDataField = GetType().GetField("PursueData", BindingFlags.NonPublic | BindingFlags.Instance);
+        PursueBundle PursueData = (PursueBundle)PursueDataField.GetValue(this);
+
+        if (PursueData == null)
+        {
+            yield break;
+        }
+
+        if (PursueData.Target != null)
+        {
+            base.transform.position = new Vector3(PursueData.Target.transform.position.x + (float)base.FaceDir * -1.25f, base.transform.position.y, base.transform.position.z);
+        }
+
+        float a = 0.75f;
+        float b = 1.5f;
+        float a2 = 3f;
+        float b2 = 6f;
+        bool isFullPower = PursueData.ChargePower >= 100f;
+        typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+            new HitBoxDamageParameters
+            {
+                Owner = this,
+                Tag = base.tag,
+                Damage = Mathf.Lerp(a2, b2, PursueData.ChargePower / 100f),
+                HitStun = Mathf.Lerp(a, b, PursueData.ChargePower / 100f),
+                Launch = new Vector2(2*FaceDir, 6f),
+                FreezeTime = (isFullPower ? 0f : 0.07f),
+                Priority = ((!isFullPower) ? BattleCache.PriorityType.Light : BattleCache.PriorityType.Heavy),
+                IsUnblockable = isFullPower,
+                HitSpark = new EffectSprite.Parameters
+                {
+                    SpriteHash = (isFullPower ? EffectSprite.Sprites.HitsparkHeavy : EffectSprite.Sprites.HitsparkBlunt)
+                },
+                OnHitSoundEffect = (isFullPower ? SoundCache.ins.Battle_Hit_3A : SoundCache.ins.Battle_Hit_2A)
+            }
+        );
+        AttackBundle atk = new AttackBundle
+        {
+            AnimationName = "PursuePunch",
+            OnAnimationStart = delegate
+            {
+                base.HitBox_0.transform.localPosition = new Vector2(0.8f, 0.2f);
+                base.HitBox_0.transform.localScale = new Vector2(0.9f, 0.9f);
+                base.HitBox_0.IsActive = true;
+            },
+            OnHit = delegate (BaseCharacter target, bool wasBlocked)
+            {
+                float BlockStun = (float)target.GetType().GetField("BlockStun", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(target);
+                if (!(target == null) && (target.IsHurt || !(BlockStun <= 0f)))
+                {
+                    if (isFullPower)
+                    {
+                        BattleController.instance.Cinematic_SlowMotion(0.25f);
+                    }
+                }
+            }
+        };
+
+        PursueDataField.SetValue(this, null);
+
+        sm64.SetAction(SM64Constants.ACT_STAR_DANCE_EXIT, 1);
+        sm64.SetAnim(MARIO_ANIM_STAR_DANCE);
+        sm64.SetAnimFrame(39);
+        sm64.SetActionTimer(40);
+        sm64input.overrideInput = false;
+
+        SetPlayerState(PlayerStateENUM.Attacking);
+        PrepareAnAttack(atk);
+        atk.OnAnimationStart();
     }
 
     private void Perform_PeaceSignTaunt()
@@ -590,7 +688,8 @@ public class Mario64Control : BaseCharacter
         }
         else
         {
-            SetPlayerState(PlayerStateENUM.Idle);
+            if (!IsPursuing)
+                SetPlayerState(PlayerStateENUM.Idle);
             base.HitBox_0.IsActive = false;
         }
     }
