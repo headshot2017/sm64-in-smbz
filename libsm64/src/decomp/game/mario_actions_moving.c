@@ -977,6 +977,16 @@ s32 act_turning_around(struct MarioState *m) {
         return set_jumping_action(m, ACT_SIDE_FLIP, 0);
     }
 
+    // added for SMBZ-64
+    if (m->input & INPUT_Z_PRESSED) {
+        return set_mario_action(m, ACT_CROUCH_SLIDE, 0);
+    }
+
+    // added for SMBZ-64
+    if (check_ground_dive_or_punch(m)) {
+        return TRUE;
+    }
+
     if (m->input & INPUT_UNKNOWN_5) {
         return set_mario_action(m, ACT_BRAKING, 0);
     }
@@ -1026,6 +1036,16 @@ s32 act_finish_turning_around(struct MarioState *m) {
 
     if (m->input & INPUT_A_PRESSED) {
         return set_jumping_action(m, ACT_SIDE_FLIP, 0);
+    }
+
+    // added for SMBZ-64
+    if (m->input & INPUT_Z_PRESSED) {
+        return set_mario_action(m, ACT_CROUCH_SLIDE, 0);
+    }
+
+    // added for SMBZ-64
+    if (check_ground_dive_or_punch(m)) {
+        return TRUE;
     }
 
     update_walking_speed(m);
