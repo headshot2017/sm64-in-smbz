@@ -128,7 +128,8 @@ s32 mario_update_punch_sequence(struct MarioState *m) {
                 m->flags |= MARIO_KICKING;
             }
 
-            if (is_anim_at_end(m)) {
+            //if (is_anim_at_end(m)) {
+            if (m->marioObj->header.gfx.animInfo.animFrame >= 11) {
                 set_mario_action(m, endAction, 0);
             }
             break;
