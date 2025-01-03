@@ -195,7 +195,7 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0.4f, -0.3f);
+            base.HitBox_0.transform.localPosition = new Vector2(0.5f, -0.3f);
             base.HitBox_0.transform.localScale = new Vector2(0.7f, 0.4f);
             base.HitBox_0.IsActive = true;
         }
@@ -206,27 +206,8 @@ public class Mario64Control : BaseCharacter
         AnimationName = "BreakDanceBack",
         OnAnimationStart = delegate
         {
-            SetPlayerState(PlayerStateENUM.Attacking);
-            typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
-                new HitBoxDamageParameters
-                {
-                    Owner = this,
-                    Tag = base.tag,
-                    Damage = 2f,
-                    HitStun = 0.5f,
-                    Launch = new Vector2(7f, 8f),
-                    BlockedLaunch = new Vector2(3f, 0f),
-                    IsLaunchPositionBased = true,
-                    FreezeTime = 0.03f,
-                    Priority = BattleCache.PriorityType.Light,
-                    IsUnblockable = true,
-                    HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
-                    OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
-                }
-            );
-            base.HitBox_0.transform.localPosition = new Vector2(-0.4f, -0.3f);
+            base.HitBox_0.transform.localPosition = new Vector2(-0.2f, -0.3f);
             base.HitBox_0.transform.localScale = new Vector2(0.7f, 0.4f);
-            base.HitBox_0.IsActive = true;
         }
     };
     
@@ -300,8 +281,8 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0.3f, -0.5f);
-            base.HitBox_0.transform.localScale = new Vector2(0.7f, 0.6f);
+            base.HitBox_0.transform.localPosition = new Vector2(0f, -0.5f);
+            base.HitBox_0.transform.localScale = new Vector2(0.9f, 0.6f);
         }
     };
 
@@ -325,8 +306,8 @@ public class Mario64Control : BaseCharacter
                     OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
                 }
             );
-            base.HitBox_0.transform.localPosition = new Vector2(0.3f, -0.5f);
-            base.HitBox_0.transform.localScale = new Vector2(0.7f, 0.6f);
+            base.HitBox_0.transform.localPosition = new Vector2(0f, -0.5f);
+            base.HitBox_0.transform.localScale = new Vector2(0.9f, 0.6f);
         }
     };
 
