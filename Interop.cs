@@ -183,6 +183,8 @@ namespace LibSM64
         [DllImport("sm64")]
         static extern void sm64_set_mario_action_arg(int marioId, uint action, uint actionArg);
         [DllImport("sm64")]
+        static extern void sm64_set_mario_action_arg2(int marioId, uint actionArg2);
+        [DllImport("sm64")]
         static extern void sm64_set_mario_action_timer(int marioId, uint actionTimer);
         [DllImport("sm64")]
         static extern void sm64_set_mario_animation(int marioId, int animID);
@@ -416,6 +418,10 @@ namespace LibSM64
         {
             sm64_mario_kill(marioId);
         }
+        public static void MarioSetAngle(int marioId, float x, float y, float z)
+        {
+            sm64_set_mario_angle(marioId, x, y, z);
+        }
 
         public static void MarioSetFaceAngle(int marioId, float angle)
         {
@@ -430,6 +436,11 @@ namespace LibSM64
         public static void MarioSetAction(int marioId, SM64Constants.Action action, uint actionArg)
         {
             sm64_set_mario_action_arg(marioId, (uint)action, actionArg);
+        }
+
+        public static void MarioSetActionArg2(int marioId, uint actionArg2)
+        {
+            sm64_set_mario_action_arg2(marioId, actionArg2);
         }
 
         public static void MarioSetActionTimer(int marioId, uint actionTimer)

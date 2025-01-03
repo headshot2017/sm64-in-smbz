@@ -19,7 +19,7 @@ namespace LibSM64
         int buffIndex;
         Interop.SM64MarioState[] states;
 
-        GameObject marioRendererObject;
+        public GameObject marioRendererObject;
         MeshRenderer renderer;
         Mesh marioMesh;
         int marioId;
@@ -102,11 +102,11 @@ namespace LibSM64
             renderer.sharedMaterial.mainTexture = Interop.marioTexture;
         }
 
-        public void SetPosition(Vector3 position)
+        public void SetPosition(Vector3 position, Vector3 offset)
         {
-            Interop.MarioSetPosition(marioId, position);
-            transform.position = position;
-            marioRendererObject.transform.position = position;
+            Interop.MarioSetPosition(marioId, position+offset);
+            transform.position = position+offset;
+            marioRendererObject.transform.position = smbzChar.CharacterGO.transform.TransformPoint(offset);
         }
 
         public void SetVelocity(Vector3 vel)
@@ -134,6 +134,11 @@ namespace LibSM64
             Interop.MarioKill(marioId);
         }
 
+        public void SetAngle(float x, float y, float z)
+        {
+            Interop.MarioSetAngle(marioId, x, y, z);
+        }
+
         public void SetFaceAngle(float angle)
         {
             Interop.MarioSetFaceAngle(marioId, angle);
@@ -147,6 +152,11 @@ namespace LibSM64
         public void SetAction(SM64Constants.Action action, uint actionArg)
         {
             Interop.MarioSetAction(marioId, action, actionArg);
+        }
+
+        public void SetActionArg2(uint actionArg2)
+        {
+            Interop.MarioSetActionArg2(marioId, actionArg2);
         }
 
         public void SetActionTimer(uint actionTimer)
