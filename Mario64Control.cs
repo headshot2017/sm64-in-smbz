@@ -720,6 +720,21 @@ public class Mario64Control : BaseCharacter
         HitStunStart = (damageProperties.GetHitStun != null) ? damageProperties.GetHitStun() : damageProperties.HitStun;
     }
 
+    public override void Hurt(ProjectileHitBox AttackingHitBox)
+    {
+        base.Hurt(AttackingHitBox);
+        if (!IsHurt || sm64 == null)
+            return;
+
+        // so ProjectileHitBox.DamageProperties is public, but HitBox.DamageProperties isn't?? what?
+        HitBoxDamageParameters_Projectile damageProperties = AttackingHitBox.DamageProperties;
+
+        Vector2 to = ((damageProperties.Owner == null) ? AttackingHitBox.transform.position : damageProperties.Owner.transform.position);
+        sm64.TakeDamage((uint)(damageProperties.Damage * 3), 0, new Vector3(to.x, to.y, -1));
+
+        HitStunStart = (damageProperties.GetHitStun != null) ? damageProperties.GetHitStun() : damageProperties.HitStun;
+    }
+
     public override void OnDeath()
     {
         base.OnDeath();
