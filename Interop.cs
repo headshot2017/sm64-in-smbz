@@ -420,14 +420,14 @@ namespace LibSM64
             sm64_set_mario_faceangle(marioId, angle);
         }
 
-        public static void MarioSetAction(int marioId, uint action)
+        public static void MarioSetAction(int marioId, SM64Constants.Action action)
         {
-            sm64_set_mario_action(marioId, action);
+            sm64_set_mario_action(marioId, (uint)action);
         }
 
-        public static void MarioSetAction(int marioId, uint action, uint actionArg)
+        public static void MarioSetAction(int marioId, SM64Constants.Action action, uint actionArg)
         {
-            sm64_set_mario_action_arg(marioId, action, actionArg);
+            sm64_set_mario_action_arg(marioId, (uint)action, actionArg);
         }
 
         public static void MarioSetActionTimer(int marioId, uint actionTimer)

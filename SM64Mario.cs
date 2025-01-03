@@ -139,12 +139,12 @@ namespace LibSM64
             Interop.MarioSetFaceAngle(marioId, angle);
         }
 
-        public void SetAction(uint action)
+        public void SetAction(SM64Constants.Action action)
         {
             Interop.MarioSetAction(marioId, action);
         }
 
-        public void SetAction(uint action, uint actionArg)
+        public void SetAction(SM64Constants.Action action, uint actionArg)
         {
             Interop.MarioSetAction(marioId, action, actionArg);
         }

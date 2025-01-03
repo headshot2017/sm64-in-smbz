@@ -2,8 +2,9 @@
 using MelonLoader;
 using System.Reflection;
 using UnityEngine;
+using static SM64Constants.Action;
 using static SM64Constants.MarioAnimID;
-using TwoUintPair = System.Collections.Generic.KeyValuePair<uint, uint>;
+using ActionKeyPair = System.Collections.Generic.KeyValuePair<SM64Constants.Action, uint>;
 using AnimKeyPair = System.Collections.Generic.KeyValuePair<SM64Constants.MarioAnimID, short>;
 
 public class Mario64Control : BaseCharacter
@@ -321,7 +322,7 @@ public class Mario64Control : BaseCharacter
         }
     };
 
-    private Dictionary<TwoUintPair, AttackBundle> SM64AttacksActionArg = new();
+    private Dictionary<ActionKeyPair, AttackBundle> SM64AttacksActionArg = new();
     private Dictionary<AnimKeyPair, AttackBundle> SM64AttacksAnimFrame = new();
 
     private Animator Comp_Animator;
@@ -330,8 +331,9 @@ public class Mario64Control : BaseCharacter
     protected override void Awake()
     {
         Melon<SMBZ_64.Core>.Logger.Msg("Mario64Control Awake");
-        Comp_InterplayerCollider = gameObject.AddComponent<InterplayerCollider>();
-        Comp_InterplayerCollider.gameObject.AddComponent<CapsuleCollider2D>();
+        Comp_InterplayerCollider = gameObject.transform.GetChild(2).gameObject.GetComponent<InterplayerCollider>();
+        Comp_InterplayerCollider.GetType().GetField("MyCharacter", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Comp_InterplayerCollider, this);
+        Comp_InterplayerCollider.gameObject.GetComponent<CapsuleCollider2D>().size = new Vector2(3f, 1f);
         AdditionalCharacterSpriteList = new List<SpriteRenderer>();
         SupportingSpriteList = new List<SpriteRenderer>();
 
@@ -388,20 +390,20 @@ public class Mario64Control : BaseCharacter
         SM64AttacksActionArg.Clear();
         SM64AttacksAnimFrame.Clear();
 
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_PUNCHING, 2), AttBun_Punch1);
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_PUNCHING, 5), AttBun_Punch2);
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_MOVE_PUNCHING, 2), AttBun_Punch1);
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_MOVE_PUNCHING, 5), AttBun_Punch2);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_PUNCHING, 2), AttBun_Punch1);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_PUNCHING, 5), AttBun_Punch2);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_MOVE_PUNCHING, 2), AttBun_Punch1);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_MOVE_PUNCHING, 5), AttBun_Punch2);
 
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_GROUND_POUND, 0), AttBun_GroundPoundAir);
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_GROUND_POUND_LAND, 0), AttBun_GroundPound);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_GROUND_POUND, 0), AttBun_GroundPoundAir);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_GROUND_POUND_LAND, 0), AttBun_GroundPound);
 
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_DIVE, 0), AttBun_Dive);
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_DIVE, 1), AttBun_Dive);
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_DIVE_SLIDE, 0), AttBun_DiveSlide);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_DIVE, 0), AttBun_Dive);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_DIVE, 1), AttBun_Dive);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_DIVE_SLIDE, 0), AttBun_DiveSlide);
 
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_SLIDE_KICK, 0), AttBun_SlideKick);
-        SM64AttacksActionArg.Add(new TwoUintPair(SM64Constants.ACT_SLIDE_KICK_SLIDE, 0), AttBun_SlideKickSlide);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_SLIDE_KICK, 0), AttBun_SlideKick);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_SLIDE_KICK_SLIDE, 0), AttBun_SlideKickSlide);
 
         SM64AttacksAnimFrame.Add(new AnimKeyPair(MARIO_ANIM_GROUND_KICK, 0), AttBun_GroundKick);
         SM64AttacksAnimFrame.Add(new AnimKeyPair(MARIO_ANIM_GROUND_KICK, 4), AttBun_AttackEnd);
@@ -435,7 +437,7 @@ public class Mario64Control : BaseCharacter
             Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control: {e}");
         }
 
-        if (sm64.marioState.action == SM64Constants.ACT_GROUND_POUND)
+        if (sm64.marioState.action == (uint)ACT_GROUND_POUND)
             base.HitBox_0.IsActive = (sm64.marioState.velocity[1] < -50f);
     }
 
@@ -466,8 +468,8 @@ public class Mario64Control : BaseCharacter
 
         sm64input.overrideInput = true;
         sm64input.joyOverride = -((bool)IsFacingRightField.GetValue(this) ? Vector2.right : Vector2.left);
-        if (sm64.marioState.action != SM64Constants.ACT_WALKING)
-            sm64.SetAction(SM64Constants.ACT_WALKING);
+        if (sm64.marioState.action != (uint)ACT_WALKING)
+            sm64.SetAction(ACT_WALKING);
 
         if (PursueData.Target == null)
         {
@@ -621,7 +623,7 @@ public class Mario64Control : BaseCharacter
 
         PursueDataField.SetValue(this, null);
 
-        sm64.SetAction(SM64Constants.ACT_STAR_DANCE_EXIT, 1);
+        sm64.SetAction(ACT_STAR_DANCE_EXIT, 1);
         sm64.SetAnim(MARIO_ANIM_STAR_DANCE);
         sm64.SetAnimFrame(39);
         sm64.SetActionTimer(40);
@@ -635,10 +637,25 @@ public class Mario64Control : BaseCharacter
     private void Perform_PeaceSignTaunt()
     {
         if (sm64 == null) return;
-        sm64.SetAction(SM64Constants.ACT_STAR_DANCE_EXIT);
-        sm64.SetAnim(MARIO_ANIM_STAR_DANCE);
-        sm64.SetAnimFrame(35);
-        sm64.SetActionTimer(36);
+
+        AttackBundle atk = new AttackBundle
+        {
+            AnimationName = "ACT_STAR_DANCE_EXIT",
+            OnAnimationStart = delegate
+            {
+                SetPlayerState(PlayerStateENUM.Attacking);
+                sm64.SetAction(ACT_STAR_DANCE_EXIT);
+                sm64.SetAnim(MARIO_ANIM_STAR_DANCE);
+                sm64.SetAnimFrame(35);
+                sm64.SetActionTimer(36);
+            },
+            OnAnimationEnd = delegate
+            {
+                SetPlayerState(PlayerStateENUM.Idle);
+            }
+        };
+        PrepareAnAttack(atk);
+        atk.OnAnimationStart();
     }
 
     protected override void Perform_Grounded_NeutralTaunt()
@@ -657,10 +674,10 @@ public class Mario64Control : BaseCharacter
     }
 
 
-    public void OnChangeSM64Action(uint action, uint actionArg)
+    public void OnChangeSM64Action(SM64Constants.Action action, uint actionArg)
     {
-        TwoUintPair k = new TwoUintPair(action, actionArg);
-        Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control action 0x{action:X} {actionArg}");
+        ActionKeyPair k = new ActionKeyPair(action, actionArg);
+        Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control action {action} {actionArg}");
         if (SM64AttacksActionArg.ContainsKey(k))
         {
             PrepareAnAttack(SM64AttacksActionArg[k]);
@@ -669,16 +686,19 @@ public class Mario64Control : BaseCharacter
         }
         else
         {
-            if (!IsPursuing)
+            if (CurrentAttackData != null && CurrentAttackData.OnAnimationEnd != null && action.ToString() != CurrentAttackData.AnimationName)
+                CurrentAttackData.OnAnimationEnd();
+
+            if (!IsPursuing && !IsAttacking)
                 SetPlayerState(PlayerStateENUM.Idle);
             base.HitBox_0.IsActive = false;
         }
     }
 
-    public void OnMarioAdvanceAnimFrame(int animID, short animFrame)
+    public void OnMarioAdvanceAnimFrame(SM64Constants.MarioAnimID animID, short animFrame)
     {
-        AnimKeyPair k = new AnimKeyPair((SM64Constants.MarioAnimID)animID, animFrame);
-        Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control anim {(SM64Constants.MarioAnimID)animID} {animFrame}");
+        AnimKeyPair k = new AnimKeyPair(animID, animFrame);
+        Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control anim {animID} {animFrame}");
         if (SM64AttacksAnimFrame.ContainsKey(k))
         {
             PrepareAnAttack(SM64AttacksAnimFrame[k]);

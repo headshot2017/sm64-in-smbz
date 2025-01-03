@@ -261,7 +261,7 @@ namespace SMBZ_64
 
         static void OnMarioChangeAction(SM64Mario o)
         {
-            uint action = o.marioState.action;
+            SM64Constants.Action action = (SM64Constants.Action)o.marioState.action;
             uint actionArg = o.marioState.actionArg;
 
             Mario64Control character = (Mario64Control)o.smbzChar.CharacterGO;
@@ -270,7 +270,7 @@ namespace SMBZ_64
 
         static void OnMarioAdvanceAnimFrame(SM64Mario o)
         {
-            int animID = o.marioState.animID;
+            SM64Constants.MarioAnimID animID = (SM64Constants.MarioAnimID)o.marioState.animID;
             short animFrame = o.marioState.animFrame;
 
             Mario64Control character = (Mario64Control)o.smbzChar.CharacterGO;
