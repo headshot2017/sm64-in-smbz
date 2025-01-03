@@ -1094,6 +1094,13 @@ s32 act_crazy_box_bounce(struct MarioState *m) {
 
 u32 common_air_knockback_step(struct MarioState *m, u32 landAction, u32 hardFallAction, s32 animation,
                               f32 speed) {
+    // SMBZ-64 libsm64
+    if (m->canRecover)
+    {
+        set_mario_action(m, ACT_FREEFALL, 0);
+        return AIR_STEP_NONE;
+    }
+
     u32 stepResult;
 
     mario_set_forward_vel(m, speed);
@@ -1115,10 +1122,10 @@ u32 common_air_knockback_step(struct MarioState *m, u32 landAction, u32 hardFall
                 if (m->action == ACT_THROWN_FORWARD || m->action == ACT_THROWN_BACKWARD) {
                     set_mario_action(m, landAction, m->hurtCounter);
                 } else {
-                    set_mario_action(m, landAction, m->actionArg);
+                    set_mario_action(m, landAction, m->actionArg); // SMBZ-64 libsm64
                 }
 #else
-                set_mario_action(m, landAction, m->actionArg);
+                set_mario_action(m, landAction, m->actionArg); // SMBZ-64 libsm64
 #endif
             }
             break;

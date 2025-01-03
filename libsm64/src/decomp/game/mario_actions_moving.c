@@ -1615,6 +1615,15 @@ s32 act_dive_slide(struct MarioState *m) {
 }
 
 s32 common_ground_knockback_action(struct MarioState *m, s32 animation, s32 arg2, s32 arg3, s32 arg4) {
+    // SMBZ-64 libsm64
+    if (m->canRecover)
+    {
+        float forwardVel = m->forwardVel;
+        set_mario_action(m, ACT_WALKING, 0);
+        m->forwardVel = forwardVel;
+        return 0;
+    }
+
     s32 animFrame;
 
     if (arg3) {
@@ -1641,17 +1650,19 @@ s32 common_ground_knockback_action(struct MarioState *m, s32 animation, s32 arg2
     animFrame = set_mario_animation(m, animation);
     if (animFrame < arg2) {
         apply_landing_accel(m, 0.9f);
-    } else if (m->forwardVel >= 0.0f) {
+    //} else if (m->forwardVel >= 0.0f) {
+    } else if (animation == MARIO_ANIM_FORWARD_KB || animation == MARIO_ANIM_LAND_ON_STOMACH) {
         mario_set_forward_vel(m, 0.1f);
     } else {
         mario_set_forward_vel(m, -0.1f);
     }
 
     if (perform_ground_step(m) == GROUND_STEP_LEFT_GROUND) {
-        if (m->forwardVel >= 0.0f) {
-            set_mario_action(m, ACT_FORWARD_AIR_KB, arg4);
+        //if (m->forwardVel >= 0.0f) {
+        if (animation == MARIO_ANIM_FORWARD_KB || animation == MARIO_ANIM_LAND_ON_STOMACH) { // SMBZ-64 libsm64
+            set_mario_action(m, ACT_HARD_FORWARD_AIR_KB, arg4); // SMBZ-64 libsm64
         } else {
-            set_mario_action(m, ACT_BACKWARD_AIR_KB, arg4);
+            set_mario_action(m, ACT_HARD_BACKWARD_AIR_KB, arg4); // SMBZ-64 libsm64
         }
     } else if (is_anim_at_end(m)) {
         if (m->health < 0x100) {
@@ -1668,10 +1679,14 @@ s32 common_ground_knockback_action(struct MarioState *m, s32 animation, s32 arg2
 }
 
 s32 act_hard_backward_ground_kb(struct MarioState *m) {
+    // SMBZ-64 libsm64
     s32 animFrame =
         common_ground_knockback_action(m, MARIO_ANIM_FALL_OVER_BACKWARDS, 43, TRUE, m->actionArg);
-    if (animFrame == 43 && m->health < 0x100) {
-        set_mario_action(m, ACT_DEATH_ON_BACK, 0);
+    if (animFrame >= 43) {
+        if (m->health < 0x100)
+            set_mario_action(m, ACT_DEATH_ON_BACK, 0);
+        else if (!m->canRecover)
+            m->marioObj->header.gfx.animInfo.animFrame = 43;
     }
 
 #ifndef VERSION_JP
@@ -1688,22 +1703,32 @@ s32 act_hard_backward_ground_kb(struct MarioState *m) {
 }
 
 s32 act_hard_forward_ground_kb(struct MarioState *m) {
+    // SMBZ-64 libsm64
     s32 animFrame =
         common_ground_knockback_action(m, MARIO_ANIM_LAND_ON_STOMACH, 21, TRUE, m->actionArg);
-    if (animFrame == 23 && m->health < 0x100) {
-        set_mario_action(m, ACT_DEATH_ON_STOMACH, 0);
+    if (animFrame >= 21) {
+        if (m->health < 0x100)
+            set_mario_action(m, ACT_DEATH_ON_STOMACH, 0);
+        else if (!m->canRecover)
+            m->marioObj->header.gfx.animInfo.animFrame = 21;
     }
 
     return FALSE;
 }
 
 s32 act_backward_ground_kb(struct MarioState *m) {
-    common_ground_knockback_action(m, MARIO_ANIM_BACKWARD_KB, 22, TRUE, m->actionArg);
+    // SMBZ-64 libsm64
+    s32 animFrame = common_ground_knockback_action(m, MARIO_ANIM_BACKWARD_KB, 22, TRUE, m->actionArg);
+    if (animFrame >= 13 && !m->canRecover)
+        m->marioObj->header.gfx.animInfo.animFrame = 12;
     return FALSE;
 }
 
 s32 act_forward_ground_kb(struct MarioState *m) {
-    common_ground_knockback_action(m, MARIO_ANIM_FORWARD_KB, 20, TRUE, m->actionArg);
+    // SMBZ-64 libsm64
+    s32 animFrame = common_ground_knockback_action(m, MARIO_ANIM_FORWARD_KB, 20, TRUE, m->actionArg);
+    if (animFrame >= 10 && !m->canRecover)
+        m->marioObj->header.gfx.animInfo.animFrame = 9;
     return FALSE;
 }
 

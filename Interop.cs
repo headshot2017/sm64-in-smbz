@@ -209,6 +209,8 @@ namespace LibSM64
         [DllImport("sm64")]
         static extern void sm64_set_mario_health(int marioId, ushort health);
         [DllImport("sm64")]
+        static extern void sm64_set_mario_can_recover(int marioId, byte canRecover);
+        [DllImport("sm64")]
         static extern void sm64_mario_take_damage(int marioId, uint damage, uint subtype, float x, float y, float z);
         [DllImport("sm64")]
         static extern void sm64_mario_heal(int marioId, byte healCounter);
@@ -443,6 +445,11 @@ namespace LibSM64
         public static void MarioSetAnimFrame(int marioId, short animFrame)
         {
             sm64_set_mario_anim_frame(marioId, animFrame);
+        }
+
+        public static void MarioSetCanRecover(int marioId, byte on)
+        {
+            sm64_set_mario_can_recover(marioId, on);
         }
 
         public static void PlaySound(uint soundBits, Vector3 pos)

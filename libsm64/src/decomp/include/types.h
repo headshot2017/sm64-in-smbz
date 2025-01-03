@@ -326,6 +326,8 @@ struct MarioState
 
     u16 curTerrain; // libsm64: added field
     s32 gasLevel; // libsm64: added field
+
+    u8 canRecover; // SMBZ-64 libsm64
 };
 
 #endif // TYPES_H

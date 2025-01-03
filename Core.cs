@@ -105,7 +105,10 @@ namespace SMBZ_64
 
                 o.contextUpdate();
 
-                if (o.smbzChar.CharacterGO.IsHurt || o.smbzChar.CharacterGO.IsPursuing)
+                bool overrideSM64 = o.smbzChar.CharacterGO.IsHurt || o.smbzChar.CharacterGO.IsPursuing;
+                o.SetCanRecover(!overrideSM64);
+
+                if (overrideSM64)
                 {
                     Mario64Control character = (Mario64Control)o.smbzChar.CharacterGO;
                     o.SetPosition(o.smbzChar.CharacterGO.transform.position + new Vector3(0, -0.9f, -1));

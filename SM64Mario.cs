@@ -164,6 +164,11 @@ namespace LibSM64
             Interop.MarioSetAnimFrame(marioId, frame);
         }
 
+        public void SetCanRecover(bool canRecover)
+        {
+            Interop.MarioSetCanRecover(marioId, (byte)(canRecover?1:0));
+        }
+
         public void contextFixedUpdate()
         {
             uint oldAction = marioState.action;

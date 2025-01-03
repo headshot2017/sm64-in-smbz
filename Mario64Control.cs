@@ -225,7 +225,7 @@ public class Mario64Control : BaseCharacter
                     Tag = base.tag,
                     Damage = 2.5f,
                     HitStun = 0.6f,
-                    GetLaunch = () => new Vector2(-sm64.marioState.velocity[0]/3, sm64.marioState.velocity[1]/3),
+                    GetLaunch = () => new Vector2(-sm64.marioState.velocity[0]/3.2f, sm64.marioState.velocity[1]/3),
                     FreezeTime = 0.1f,
                     Priority = BattleCache.PriorityType.Medium,
                     HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
@@ -333,7 +333,7 @@ public class Mario64Control : BaseCharacter
         Melon<SMBZ_64.Core>.Logger.Msg("Mario64Control Awake");
         Comp_InterplayerCollider = gameObject.transform.GetChild(2).gameObject.GetComponent<InterplayerCollider>();
         Comp_InterplayerCollider.GetType().GetField("MyCharacter", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Comp_InterplayerCollider, this);
-        Comp_InterplayerCollider.gameObject.GetComponent<CapsuleCollider2D>().size = new Vector2(3f, 1f);
+        Comp_InterplayerCollider.gameObject.GetComponent<CapsuleCollider2D>().size = new Vector2(2.8f, 1f);
         AdditionalCharacterSpriteList = new List<SpriteRenderer>();
         SupportingSpriteList = new List<SpriteRenderer>();
 
@@ -689,8 +689,9 @@ public class Mario64Control : BaseCharacter
             if (CurrentAttackData != null && CurrentAttackData.OnAnimationEnd != null && action.ToString() != CurrentAttackData.AnimationName)
                 CurrentAttackData.OnAnimationEnd();
 
-            if (!IsPursuing && !IsAttacking)
+            if (!IsPursuing)
                 SetPlayerState(PlayerStateENUM.Idle);
+
             base.HitBox_0.IsActive = false;
         }
     }
