@@ -102,6 +102,14 @@ namespace LibSM64
             renderer.sharedMaterial.mainTexture = Interop.marioTexture;
         }
 
+        public void SetColors(Color32[] colors)
+        {
+            if (colors.Length != 6)
+                return;
+
+            renderer.sharedMaterial.mainTexture = Interop.GenerateTexture(colors);
+        }
+
         public void SetPosition(Vector3 position, Vector3 offset)
         {
             Interop.MarioSetPosition(marioId, position+offset);

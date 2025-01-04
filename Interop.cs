@@ -24,31 +24,31 @@ namespace LibSM64
 
         struct alphaRemovalArea
         {
-            public alphaRemovalArea(int _x, int _y, int _w, int _h, Color32 col)
+            public alphaRemovalArea(int _x, int _y, int _w, int _h, int col)
             {
                 x = _x;
                 y = _y;
                 w = _w;
                 h = _h;
-                replaceColor = col;
+                colorIndex = col;
             }
 
             public int x;
             public int y;
             public int w;
             public int h;
-            public Color32 replaceColor;
+            public int colorIndex;
         }
         // welcome to hardcode town
         static alphaRemovalArea[] removalAreas = {
-            new alphaRemovalArea(64,     0, 32, 32, defaultColors[0]), // Shirt buttons
-            new alphaRemovalArea(128-16, 0, 64, 64, defaultColors[1]), // M cap logo
-            new alphaRemovalArea(192-16, 0, 64, 64, defaultColors[2]), // Side hair
-            new alphaRemovalArea(256-16, 0, 64, 64, defaultColors[2]), // Moustache
-            new alphaRemovalArea(320-16, 0, 64, 64, defaultColors[2]), // Eyes (Normal)
-            new alphaRemovalArea(384-16, 0, 64, 64, defaultColors[2]), // Eyes (Half-blink)
-            new alphaRemovalArea(448-16, 0, 64, 64, defaultColors[2]), // Eyes (Closed)
-            new alphaRemovalArea(512-16, 0, 64, 64, defaultColors[2]), // Eyes (Dead)
+            new alphaRemovalArea(64,     0, 32, 32, 0), // Shirt buttons
+            new alphaRemovalArea(128-16, 0, 64, 64, 1), // M cap logo
+            new alphaRemovalArea(192-16, 0, 64, 64, 2), // Side hair
+            new alphaRemovalArea(256-16, 0, 64, 64, 2), // Moustache
+            new alphaRemovalArea(320-16, 0, 64, 64, 2), // Eyes (Normal)
+            new alphaRemovalArea(384-16, 0, 64, 64, 2), // Eyes (Half-blink)
+            new alphaRemovalArea(448-16, 0, 64, 64, 2), // Eyes (Closed)
+            new alphaRemovalArea(512-16, 0, 64, 64, 2), // Eyes (Dead)
         };
 
         [StructLayout(LayoutKind.Sequential)]
@@ -270,6 +270,7 @@ namespace LibSM64
         static extern void sm64_register_debug_print_function(IntPtr debugPrintFunction);
 
 
+        static public Texture2D defaultTexture { get; private set; }
         static public Texture2D marioTexture { get; private set; }
         static public bool isGlobalInit { get; private set; }
 
@@ -290,7 +291,7 @@ namespace LibSM64
             sm64_register_debug_print_function(Marshal.GetFunctionPointerForDelegate(debugDelegate));
 
             Color32[] cols = new Color32[ SM64_TEXTURE_WIDTH * SM64_TEXTURE_HEIGHT ];
-            marioTexture = new Texture2D( SM64_TEXTURE_WIDTH, SM64_TEXTURE_HEIGHT );
+            defaultTexture = new Texture2D( SM64_TEXTURE_WIDTH, SM64_TEXTURE_HEIGHT );
             for (int ix = 0; ix < SM64_TEXTURE_WIDTH; ix++)
             {
                 for (int iy = 0; iy < SM64_TEXTURE_HEIGHT; iy++)
@@ -304,37 +305,10 @@ namespace LibSM64
                 }
             }
 
-            // Store Mario's default colors in the texture.
-            // If using a shader that doesn't support vertex colors,
-            // this is a viable workaround
-            for (int i = 0; i < defaultColors.Length; i++)
-            {
-                for (int ix = SM64_TEXTURE_WIDTH-32-1; ix < SM64_TEXTURE_WIDTH; ix++)
-                {
-                    for (int iy = i*10; iy < i*10+10; iy++)
-                    {
-                        cols[ix + SM64_TEXTURE_WIDTH * iy] = defaultColors[i];
-                    }
-                }
-            }
+            defaultTexture.SetPixels32(cols);
+            defaultTexture.Apply();
 
-            // Replace transparency in certain parts of the texture
-            // with a solid color
-            for (int i = 0; i < removalAreas.Length; i++)
-            {
-                alphaRemovalArea r = removalAreas[i];
-                for (int ix = r.x; ix < r.x+r.w; ix++)
-                {
-                    for (int iy = r.y; iy < r.y+r.h; iy++)
-                    {
-                        if (cols[ix + SM64_TEXTURE_WIDTH * iy].a != 0) continue;
-                        cols[ix + SM64_TEXTURE_WIDTH * iy] = r.replaceColor;
-                    }
-                }
-            }
-
-            marioTexture.SetPixels32( cols );
-            marioTexture.Apply();
+            marioTexture = GenerateTexture(defaultColors);
 
             romHandle.Free();
             textureDataHandle.Free();
@@ -348,6 +322,46 @@ namespace LibSM64
             sm64_global_terminate();
             marioTexture = null;
             isGlobalInit = false;
+        }
+
+        public static Texture2D GenerateTexture(Color32[] customColors)
+        {
+            Texture2D texture = new Texture2D(SM64_TEXTURE_WIDTH, SM64_TEXTURE_HEIGHT);
+            Color32[] cols = defaultTexture.GetPixels32();
+
+            // Store Mario's default colors in the texture.
+            // If using a shader that doesn't support vertex colors,
+            // this is a viable workaround
+            for (int i = 0; i < customColors.Length; i++)
+            {
+                for (int ix = SM64_TEXTURE_WIDTH - 32 - 1; ix < SM64_TEXTURE_WIDTH; ix++)
+                {
+                    for (int iy = i * 10; iy < i * 10 + 10; iy++)
+                    {
+                        cols[ix + SM64_TEXTURE_WIDTH * iy] = customColors[i];
+                    }
+                }
+            }
+
+            // Replace transparency in certain parts of the texture
+            // with a solid color
+            for (int i = 0; i < removalAreas.Length; i++)
+            {
+                alphaRemovalArea r = removalAreas[i];
+                for (int ix = r.x; ix < r.x + r.w; ix++)
+                {
+                    for (int iy = r.y; iy < r.y + r.h; iy++)
+                    {
+                        if (cols[ix + SM64_TEXTURE_WIDTH * iy].a != 0) continue;
+                        cols[ix + SM64_TEXTURE_WIDTH * iy] = customColors[r.colorIndex];
+                    }
+                }
+            }
+
+            texture.SetPixels32(cols);
+            texture.Apply();
+
+            return texture;
         }
 
         public static void StaticSurfacesLoad( SM64Surface[] surfaces )
