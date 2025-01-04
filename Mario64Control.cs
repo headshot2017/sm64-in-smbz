@@ -458,6 +458,8 @@ public class Mario64Control : BaseCharacter
                 }
             }
         }
+
+        sm64input.overrideInput = IsPursuing;
     }
 
     public override void UpdateSpriteSortOrder(int value)
@@ -485,7 +487,6 @@ public class Mario64Control : BaseCharacter
             return;
         }
 
-        sm64input.overrideInput = true;
         sm64input.joyOverride = -((bool)IsFacingRightField.GetValue(this) ? Vector2.right : Vector2.left);
         if (sm64.marioState.action != (uint)ACT_WALKING)
             sm64.SetAction(ACT_WALKING);
@@ -574,7 +575,6 @@ public class Mario64Control : BaseCharacter
 
     protected override System.Collections.IEnumerator OnPursueMiss()
     {
-        sm64input.overrideInput = false;
         return base.OnPursueMiss();
     }
 
