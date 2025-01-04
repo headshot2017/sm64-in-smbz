@@ -558,7 +558,8 @@ s32 act_crouching(struct MarioState *m) {
     }
 
     if (m->input & INPUT_NONZERO_ANALOG) {
-        return set_mario_action(m, ACT_START_CRAWLING, 0);
+        //return set_mario_action(m, ACT_START_CRAWLING, 0);
+        m->faceAngle[1] = m->intendedYaw;
     }
 
     if (m->input & INPUT_B_PRESSED) {
@@ -714,6 +715,10 @@ s32 act_start_crouching(struct MarioState *m) {
         return set_mario_action(m, ACT_BEGIN_SLIDING, 0);
     }
 
+    if (m->input & INPUT_NONZERO_ANALOG) {
+        m->faceAngle[1] = m->intendedYaw;
+    }
+
     stationary_ground_step(m);
     set_mario_animation(m, MARIO_ANIM_START_CROUCHING);
     if (is_anim_past_end(m)) {
@@ -737,6 +742,10 @@ s32 act_stop_crouching(struct MarioState *m) {
 
     if (m->input & INPUT_ABOVE_SLIDE) {
         return set_mario_action(m, ACT_BEGIN_SLIDING, 0);
+    }
+
+    if (m->input & INPUT_NONZERO_ANALOG) {
+        m->faceAngle[1] = m->intendedYaw;
     }
 
     stationary_ground_step(m);
