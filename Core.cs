@@ -105,13 +105,16 @@ namespace SMBZ_64
 
                 o.contextUpdate();
 
+                BaseCharacter.MovementRushStateENUM movRush =
+                    (BaseCharacter.MovementRushStateENUM)typeof(BaseCharacter).GetField("MovementRushState", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(o.smbzChar.CharacterGO);
                 bool canRecover =
                     !o.smbzChar.CharacterGO.IsHurt &&
                     !o.smbzChar.CharacterGO.IsPursuing;
                 bool overrideSM64 =
                     !canRecover ||
                     (bool)typeof(BaseCharacter).GetField("IsBursting", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(o.smbzChar.CharacterGO) ||
-                    (bool)typeof(BaseCharacter).GetField("IsRushing", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(o.smbzChar.CharacterGO);
+                    (bool)typeof(BaseCharacter).GetField("IsRushing", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(o.smbzChar.CharacterGO) ||
+                    movRush != BaseCharacter.MovementRushStateENUM.Inactive;
                 o.SetCanRecover(canRecover);
 
                 if (overrideSM64)
