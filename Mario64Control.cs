@@ -13,6 +13,8 @@ public class Mario64Control : BaseCharacter
     public SM64Mario sm64 = null;
     public SM64InputSMBZG sm64input = null;
 
+    public MovementRushStateENUM LastMovementRushState;
+
     private AttackBundle AttBun_Punch1 => new AttackBundle
     {
         AnimationName = "Punch1",
@@ -311,6 +313,36 @@ public class Mario64Control : BaseCharacter
         }
     };
 
+    private AttackBundle AttBun_Twirl => new AttackBundle
+    {
+        AnimationName = "Twirl",
+        OnAnimationStart = delegate
+        {
+            SetPlayerState(PlayerStateENUM.Attacking);
+            typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                new HitBoxDamageParameters
+                {
+                    Owner = this,
+                    Tag = base.tag,
+                    Damage = 2f,
+                    HitStun = 0.5f,
+                    GetLaunch = () => new Vector2(-sm64.marioState.velocity[0] / 3, 3),
+                    FreezeTime = 0.05f,
+                    Priority = BattleCache.PriorityType.Medium,
+                    HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                    OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
+                }
+            );
+            base.HitBox_0.transform.localPosition = new Vector2(0f, -0.2f);
+            base.HitBox_0.transform.localScale = new Vector2(0.9f, 0.6f);
+            base.HitBox_0.IsActive = true;
+        },
+        OnFixedUpdate = delegate
+        {
+            Melon<SMBZ_64.Core>.Logger.Msg($"mario {sm64.marioState.faceAngle}");
+        }
+    };
+
     private AttackBundle AttBun_AttackEnd => new AttackBundle
     {
         AnimationName = "AttackEnd",
@@ -459,12 +491,43 @@ public class Mario64Control : BaseCharacter
             }
         }
 
+        MovementRushStateENUM movRush =
+            (MovementRushStateENUM)typeof(BaseCharacter).GetField("MovementRushState", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+
+        if (LastMovementRushState != MovementRushStateENUM.Inactive && LastMovementRushState != MovementRushStateENUM.Idle && movRush != LastMovementRushState)
+        {
+            if (CurrentAttackData != null && CurrentAttackData.OnAnimationEnd != null)
+            {
+                Melon<SMBZ_64.Core>.Logger.Msg($"OnAnimationEnd {movRush} {LastMovementRushState} {CurrentAttackData.OnAnimationStart_HasExecuted}");
+                CurrentAttackData.OnAnimationEnd();
+            }
+        }
+
+        LastMovementRushState = movRush;
+
         sm64input.overrideInput = IsPursuing;
     }
 
     public override void UpdateSpriteSortOrder(int value)
     {
         // empty
+    }
+
+    [HarmonyPatch(typeof(BaseCharacter), "PrepareAnAttack", new Type[] { typeof(AttackBundle), typeof(float) })]
+    private static class Patch
+    {
+        private static void Postfix(BaseCharacter __instance)
+        {
+            if (__instance.GetType() != typeof(Mario64Control))
+                return;
+
+            Mario64Control c = (Mario64Control)__instance;
+            MovementRushStateENUM movRush =
+                (MovementRushStateENUM)typeof(BaseCharacter).GetField("MovementRushState", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c);
+
+            c.CurrentAttackData.OnAnimationStart();
+            Melon<SMBZ_64.Core>.Logger.Msg($"OnAnimationStart {c.CurrentAttackData.AnimationName} {c.CurrentAttackData.AnimationNameHash == c.ASN_MR_Dodge} {c.GetPlayerState()} {movRush} {c.LastMovementRushState} {c.CurrentAttackData.OnAnimationStart_HasExecuted}");
+        }
     }
 
     protected override void Update_General()
@@ -650,7 +713,6 @@ public class Mario64Control : BaseCharacter
 
         SetPlayerState(PlayerStateENUM.Attacking);
         PrepareAnAttack(atk);
-        atk.OnAnimationStart();
     }
 
     public override void OnBurstBegin(BurstDataStore burstData)
@@ -737,7 +799,6 @@ public class Mario64Control : BaseCharacter
             }
         };
         PrepareAnAttack(atk);
-        atk.OnAnimationStart();
 
         base.OnBurst_Victory(target);
         yield return null;
@@ -764,7 +825,6 @@ public class Mario64Control : BaseCharacter
             }
         };
         PrepareAnAttack(atk);
-        atk.OnAnimationStart();
     }
 
     protected override void Perform_Grounded_NeutralTaunt()
@@ -782,6 +842,14 @@ public class Mario64Control : BaseCharacter
         Perform_PeaceSignTaunt();
     }
 
+    protected override void Perform_Aerial_NeutralSpecial()
+    {
+        if (sm64 == null) return;
+
+        sm64.SetAction(ACT_TWIRLING);
+        PrepareAnAttack(AttBun_Twirl);
+    }
+
 
     public void OnChangeSM64Action(SM64Constants.Action action, uint actionArg)
     {
@@ -790,7 +858,6 @@ public class Mario64Control : BaseCharacter
         if (SM64AttacksActionArg.ContainsKey(k))
         {
             PrepareAnAttack(SM64AttacksActionArg[k]);
-            SM64AttacksActionArg[k].OnAnimationStart();
             base.HitBox_0.IsActive = true;
         }
         else
@@ -818,7 +885,6 @@ public class Mario64Control : BaseCharacter
         if (SM64AttacksAnimFrame.ContainsKey(k))
         {
             PrepareAnAttack(SM64AttacksAnimFrame[k]);
-            SM64AttacksAnimFrame[k].OnAnimationStart();
         }
     }
 
