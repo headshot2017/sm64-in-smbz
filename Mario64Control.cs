@@ -10,6 +10,7 @@ using AnimKeyPair = System.Collections.Generic.KeyValuePair<SM64Constants.MarioA
 
 public class Mario64Control : BaseCharacter
 {
+    public GameObject sm64Obj = null;
     public SM64Mario sm64 = null;
     public SM64InputSMBZG sm64input = null;
 
@@ -381,9 +382,9 @@ public class Mario64Control : BaseCharacter
 
 
 
-        Melon<SMBZ_64.Core>.Logger.Msg("Mario64Control Awakened");
         Comp_Animator = GetComponent<Animator>();
         Comp_Rigidbody2D = GetComponent<Rigidbody2D>();
+        Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control Awakened: {Comp_SpriteRenderer != null} {AdditionalCharacterSpriteList != null}");
         AerialAcceleration = 0f;
         GroundedAcceleration = 0f;
         GroundedDrag = 0f;
@@ -392,11 +393,9 @@ public class Mario64Control : BaseCharacter
         Pursue_Speed = 25f;
         Pursue_StartupDelay = 0.1f;
 
-        Type type = typeof(Mario64Control);
-        FieldInfo EnergyMaxField = type.GetField("EnergyMax", BindingFlags.NonPublic | BindingFlags.Instance);
-        FieldInfo EnergyStartField = type.GetField("EnergyStart", BindingFlags.NonPublic | BindingFlags.Instance);
-        EnergyMaxField.SetValue(this, 200f);
-        EnergyStartField.SetValue(this, 100f);
+        GetType().GetField("EnergyMax", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, 200f);
+        GetType().GetField("EnergyStart", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, 100f);
+        GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, (base.tag == "Team1"));
     }
 
     protected override void Start()
@@ -408,12 +407,56 @@ public class Mario64Control : BaseCharacter
             base.HitBox_0 = base.transform.Find("HitBox_0").GetComponent<HitBox>();
             base.HitBox_0.tag = base.tag;
             SoundEffect_Jump = null;
+
+            sm64Obj = new GameObject("SM64_MARIO");
+            sm64Obj.transform.position = new Vector3(transform.position.x, transform.position.y, -1);
+            sm64input = sm64Obj.AddComponent<SM64InputSMBZG>();
+            sm64input.c = (CharacterControl)GetType().GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+            sm64 = sm64Obj.AddComponent<SM64Mario>();
+            sm64.smbzChar = sm64input.c;
+            sm64.changeActionCallback = SMBZ_64.Core.OnMarioChangeAction;
+            sm64.advanceAnimFrameCallback = SMBZ_64.Core.OnMarioAdvanceAnimFrame;
+            sm64.SetFaceAngle((float)Math.PI / 2 * (base.tag == "Team1" ? -1 : 1));
+
+            Material[] mats = Resources.FindObjectsOfTypeAll<Material>();
+            Material m = null;
+            foreach (Material mat in mats)
+            {
+                if (mat.name != "UISpriteWithHueSaturationContrast")
+                    continue;
+
+                m = Material.Instantiate<Material>(mat);
+                break;
+            }
+            Shader[] sh = Resources.FindObjectsOfTypeAll<Shader>();
+            foreach (Shader s in sh)
+            {
+                if (s.name != "Legacy Shaders/VertexLit")
+                    continue;
+
+                m.shader = s;
+                m.SetColor("_Emission", new Color(0.4f, 0.4f, 0.4f, 1));
+                break;
+            }
+            sm64.SetMaterial(m);
+
+            if (sm64.spawned)
+                Melon<SMBZ_64.Core>.Instance.RegisterMario(sm64);
+            else
+                Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control {base.tag} Failed to spawn Mario");
         }
         catch (Exception e)
         {
             Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control Start: {e}");
         }
         Melon<SMBZ_64.Core>.Logger.Msg("Mario64Control Started");
+    }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        Melon<SMBZ_64.Core>.Instance.UnregisterMario(sm64);
+        GameObject.Destroy(sm64Obj);
     }
 
     private void Setup_Attacks()
@@ -514,7 +557,7 @@ public class Mario64Control : BaseCharacter
     }
 
     [HarmonyPatch(typeof(BaseCharacter), "PrepareAnAttack", new Type[] { typeof(AttackBundle), typeof(float) })]
-    private static class Patch
+    private static class PrepareAnAttackPatch
     {
         private static void Postfix(BaseCharacter __instance)
         {

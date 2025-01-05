@@ -1,5 +1,6 @@
 ﻿using MelonLoader;
 using LibSM64;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Reflection;
@@ -14,6 +15,8 @@ namespace SMBZ_64
     {
         static List<SM64Mario> _marios = new List<SM64Mario>();
         static List<SM64DynamicTerrain> _surfaceObjects = new List<SM64DynamicTerrain>();
+
+        public static CharacterData_SO Mario64Data = null;
 
         public override void OnInitializeMelon()
         {
@@ -32,14 +35,27 @@ namespace SMBZ_64
 
         public override void OnLateInitializeMelon()
         {
+            // Create a clone of Mario's character data
+            GameObject Mario64Prefab = GameObject.Instantiate(BattleCache.ins.CharacterData_Mario.Prefab_BattleGameObject);
+            Mario64Prefab.name = "Mario64";
+            Mario64Prefab.SetActive(false);
+            MarioControl smbzMarioOld = Mario64Prefab.GetComponent<MarioControl>();
+            Mario64Control smbzMario = Mario64Prefab.AddComponent<Mario64Control>();
+            smbzMarioOld.Comp_SpriteRenderer.enabled = false;
+            smbzMario.Comp_Hurtbox = smbzMarioOld.Comp_Hurtbox;
+            smbzMario.enabled = true;
+            GameObject.Destroy(smbzMarioOld);
+            GameObject.DontDestroyOnLoad(Mario64Prefab);
+
+
             // Add "SM64 Mario" to Mario's special settings
 
             // Clone the original object
-            GameObject o = GameObject.Instantiate(BattleCache.ins.CharacterData_Mario.Prefab_SpecialCharacterSettingsUI);
-            GameObject.DontDestroyOnLoad(o);
-            o.name = "UI_CharacterSettings_Mario";
-            CharacterSetting oldCharSetting = o.GetComponent<CharacterSetting>();
-            CharacterSetting_Mario charSetting = o.AddComponent<CharacterSetting_Mario>();
+            GameObject settings = GameObject.Instantiate(BattleCache.ins.CharacterData_Mario.Prefab_SpecialCharacterSettingsUI);
+            GameObject.DontDestroyOnLoad(settings);
+            settings.name = "UI_CharacterSettings_Mario";
+            CharacterSetting oldCharSetting = settings.GetComponent<CharacterSetting>();
+            CharacterSetting_Mario charSetting = settings.AddComponent<CharacterSetting_Mario>();
 
             // Copy all fields from oldCharSetting to the new one
             Type type = typeof(CharacterSetting);
@@ -50,14 +66,14 @@ namespace SMBZ_64
             }
             GameObject.Destroy(oldCharSetting);
 
-            BattleCache.ins.CharacterData_Mario.Prefab_SpecialCharacterSettingsUI = o;
+            BattleCache.ins.CharacterData_Mario.Prefab_SpecialCharacterSettingsUI = settings;
 
             // Add the "SM64 Mario" checkbox
-            GameObject verticalList = o.transform.GetChild(1).gameObject;
+            GameObject verticalList = settings.transform.GetChild(1).gameObject;
             GameObject UseSM64 = GameObject.Instantiate(verticalList.transform.GetChild(0).gameObject); // Clone the "Alternate Color" checkbox
             GameObject.DontDestroyOnLoad(UseSM64);
             UseSM64.name = "UseSM64";
-            UseSM64.transform.parent = verticalList.transform;
+            UseSM64.transform.SetParent(verticalList.transform, false);
 
             GameObject LabelObj = UseSM64.transform.GetChild(0).gameObject;
             TMPro.TextMeshProUGUI Label = LabelObj.GetComponent<TMPro.TextMeshProUGUI>();
@@ -67,6 +83,24 @@ namespace SMBZ_64
             Toggle toggle = toggleObj.GetComponent<Toggle>();
             toggleObj.name = "UseSM64 Toggle";
             charSetting.Toggle_SM64 = toggle;
+
+            Mario64Data = ScriptableObject.CreateInstance<CharacterData_SO>();
+            Mario64Data.Prefab_BattleGameObject = Mario64Prefab;
+            Mario64Data.Prefab_SpecialCharacterSettingsUI = settings;
+            Mario64Data.Character = BattleCache.CharacterEnum.Mario;
+            Mario64Data.name = "[CharacterData] Mario64";
+            Mario64Data.DittoHue = BattleCache.ins.CharacterData_Mario.DittoHue;
+            Mario64Data.DittoSaturation = BattleCache.ins.CharacterData_Mario.DittoSaturation;
+            Mario64Data.DittoContrast = BattleCache.ins.CharacterData_Mario.DittoContrast;
+            smbzMario.GetType().BaseType.GetField("CharacterData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy).SetValue(smbzMario, Mario64Data);
+
+            Application.logMessageReceived += LogHandler;
+        }
+
+        private void LogHandler(string message, string stacktrace, LogType type)
+        {
+            //System.Diagnostics.StackTrace trace = new System.Diagnostics.StackTrace();
+            LoggerInstance.Msg($"{message}\n{stacktrace}");
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
@@ -75,7 +109,7 @@ namespace SMBZ_64
             _marios.Clear();
         }
 
-        public override void OnSceneWasInitialized(int buildIndex, string sceneName)
+        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             LoggerInstance.Msg($"{buildIndex} {sceneName}");
 
@@ -98,7 +132,7 @@ namespace SMBZ_64
 
             foreach (var o in _marios)
             {
-                if (!o.smbzChar.CharacterGO)
+                if (!o.smbzChar || !o.smbzChar.CharacterGO)
                     continue;
                 //if (o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled)
                     //o.smbzChar.CharacterGO.Comp_SpriteRenderer.enabled = false;
@@ -135,7 +169,7 @@ namespace SMBZ_64
 
             foreach (var o in _marios)
             {
-                if (!o.smbzChar.CharacterGO)
+                if (!o.smbzChar || !o.smbzChar.CharacterGO)
                     continue;
 
                 if (!o.smbzChar.CharacterGO.IsDead)
@@ -207,62 +241,6 @@ namespace SMBZ_64
                 surfaceMesh.sharedMesh = mesh;
             }
             RefreshStaticTerrain();
-
-            for (int i = 1; i <= 2; i++)
-            {
-                GameObject[] objs = GameObject.FindGameObjectsWithTag($"Team{i}");
-                CharacterControl smbzControl = objs[0].GetComponent<CharacterControl>();
-                ModSettings.Player player = ModSettings.GetPlayerSettings((TeamUtility.IO.PlayerID)(i - 1));
-                if (smbzControl.CharacterGO is not MarioControl || !player.Mario_SM64_IsEnabled.Value)
-                    continue;
-
-                Type type = typeof(Mario64Control);
-                FieldInfo field = type.GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                MarioControl smbzMarioOld = objs[1].GetComponent<MarioControl>();
-                Mario64Control smbzMario = objs[1].AddComponent<Mario64Control>();
-                smbzControl.CharacterGO = smbzMario;
-                smbzMarioOld.Comp_SpriteRenderer.enabled = false;
-                smbzMario.Comp_Hurtbox = smbzMarioOld.Comp_Hurtbox;
-                smbzMario.Comp_InterplayerCollider = smbzMarioOld.Comp_InterplayerCollider;
-                field.SetValue(smbzMario, smbzControl);
-                GameObject.Destroy(smbzMarioOld);
-                smbzMario.enabled = true;
-
-                GameObject marioObj = new GameObject("SM64_MARIO");
-                marioObj.transform.position = new Vector3(smbzMario.transform.position.x, smbzMario.transform.position.y, -1);
-                SM64InputSMBZG input = marioObj.AddComponent<SM64InputSMBZG>();
-                SM64Mario mario = marioObj.AddComponent<SM64Mario>();
-                if (mario.spawned)
-                {
-                    input.c = smbzControl;
-                    smbzMario.sm64 = mario;
-                    smbzMario.sm64input = input;
-
-                    Material[] mat = GameObject.FindObjectsOfType<Material>();
-                    Material m = Material.Instantiate<Material>(mat[1]);
-                    Shader[] sh = Resources.FindObjectsOfTypeAll<Shader>();
-                    foreach (Shader s in sh)
-                    {
-                        if (s.name != "Legacy Shaders/VertexLit")
-                            continue;
-
-                        m.shader = s;
-                        m.SetColor("_Emission", new Color(0.4f, 0.4f, 0.4f, 1));
-                        break;
-
-                    }
-
-                    mario.smbzChar = smbzControl;
-                    mario.changeActionCallback = OnMarioChangeAction;
-                    mario.advanceAnimFrameCallback = OnMarioAdvanceAnimFrame;
-                    mario.SetMaterial(m);
-                    mario.SetFaceAngle((float)Math.PI / 2 * (i == 1 ? -1 : 1));
-                    RegisterMario(mario);
-                }
-                else
-                    LoggerInstance.Msg($"Failed to spawn Mario {i}");
-            }
         }
 
         void SetupCharSelect()
@@ -271,7 +249,7 @@ namespace SMBZ_64
         }
 
 
-        static void OnMarioChangeAction(SM64Mario o)
+        public static void OnMarioChangeAction(SM64Mario o)
         {
             SM64Constants.Action action = (SM64Constants.Action)o.marioState.action;
             uint actionArg = o.marioState.actionArg;
@@ -280,13 +258,29 @@ namespace SMBZ_64
             character.OnChangeSM64Action(action, actionArg);
         }
 
-        static void OnMarioAdvanceAnimFrame(SM64Mario o)
+        public static void OnMarioAdvanceAnimFrame(SM64Mario o)
         {
             SM64Constants.MarioAnimID animID = (SM64Constants.MarioAnimID)o.marioState.animID;
             short animFrame = o.marioState.animFrame;
 
             Mario64Control character = (Mario64Control)o.smbzChar.CharacterGO;
             character.OnMarioAdvanceAnimFrame(animID, animFrame);
+        }
+
+        [HarmonyPatch(typeof(CharacterControl), "InstantiateCharacterObject", new Type[] { typeof(Vector3), typeof(Quaternion) })]
+        private static class CharObjPatch
+        {
+            private static bool Prefix(CharacterControl __instance)
+            {
+                ModSettings.Player player = ModSettings.GetPlayerSettings(__instance.PlayerDataReference.PlayerIndex);
+                if (__instance.PlayerDataReference.InitialCharacterData == BattleCache.ins.CharacterData_Mario)
+                {
+                    __instance.PlayerDataReference.CurrentCharacterData =
+                        player.Mario_SM64_IsEnabled.Value ? Mario64Data : BattleCache.ins.CharacterData_Mario;
+                }
+
+                return true;
+            }
         }
     }
 }
