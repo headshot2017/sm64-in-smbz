@@ -39,6 +39,7 @@ public class Mario64Control : BaseCharacter
             );
             base.HitBox_0.transform.localPosition = new Vector2(0.7f, 0);
             base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.8f);
+            base.HitBox_0.IsActive = true;
         }
     };
 
@@ -65,6 +66,7 @@ public class Mario64Control : BaseCharacter
             );
             base.HitBox_0.transform.localPosition = new Vector2(0.7f, 0);
             base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.8f);
+            base.HitBox_0.IsActive = true;
         }
     };
 
@@ -116,6 +118,7 @@ public class Mario64Control : BaseCharacter
             );
             base.HitBox_0.transform.localPosition = new Vector2(0, -0.3f);
             base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.4f);
+            base.HitBox_0.IsActive = true;
             Comp_InterplayerCollider.Disable();
         }
     };
@@ -145,6 +148,7 @@ public class Mario64Control : BaseCharacter
             );
             base.HitBox_0.transform.localPosition = new Vector2(0, -0.3f);
             base.HitBox_0.transform.localScale = new Vector2(1f, 0.5f);
+            base.HitBox_0.IsActive = true;
             Comp_InterplayerCollider.Enable();
         }
     };
@@ -211,6 +215,7 @@ public class Mario64Control : BaseCharacter
         {
             base.HitBox_0.transform.localPosition = new Vector2(-0.2f, -0.3f);
             base.HitBox_0.transform.localScale = new Vector2(0.7f, 0.4f);
+            base.HitBox_0.IsActive = true;
         }
     };
     
@@ -236,6 +241,7 @@ public class Mario64Control : BaseCharacter
             );
             base.HitBox_0.transform.localPosition = new Vector2(0.3f, 0f);
             base.HitBox_0.transform.localScale = new Vector2(0.6f, 0.6f);
+            base.HitBox_0.IsActive = true;
         }
     };
 
@@ -261,6 +267,7 @@ public class Mario64Control : BaseCharacter
             );
             base.HitBox_0.transform.localPosition = new Vector2(0.3f, 0f);
             base.HitBox_0.transform.localScale = new Vector2(0.6f, 0.6f);
+            base.HitBox_0.IsActive = true;
         }
     };
 
@@ -286,6 +293,7 @@ public class Mario64Control : BaseCharacter
             );
             base.HitBox_0.transform.localPosition = new Vector2(0f, -0.5f);
             base.HitBox_0.transform.localScale = new Vector2(0.9f, 0.6f);
+            base.HitBox_0.IsActive = true;
         }
     };
 
@@ -311,6 +319,7 @@ public class Mario64Control : BaseCharacter
             );
             base.HitBox_0.transform.localPosition = new Vector2(0f, -0.5f);
             base.HitBox_0.transform.localScale = new Vector2(0.9f, 0.6f);
+            base.HitBox_0.IsActive = true;
         }
     };
 
@@ -320,27 +329,33 @@ public class Mario64Control : BaseCharacter
         OnAnimationStart = delegate
         {
             SetPlayerState(PlayerStateENUM.Attacking);
-            typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
-                new HitBoxDamageParameters
-                {
-                    Owner = this,
-                    Tag = base.tag,
-                    Damage = 2f,
-                    HitStun = 0.5f,
-                    GetLaunch = () => new Vector2(-sm64.marioState.velocity[0] / 3, 3),
-                    FreezeTime = 0.05f,
-                    Priority = BattleCache.PriorityType.Medium,
-                    HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
-                    OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
-                }
-            );
-            base.HitBox_0.transform.localPosition = new Vector2(0f, -0.2f);
-            base.HitBox_0.transform.localScale = new Vector2(0.9f, 0.6f);
+            base.HitBox_0.transform.localPosition = new Vector2(0f, 0f);
+            base.HitBox_0.transform.localScale = new Vector2(1.25f, 0.6f);
             base.HitBox_0.IsActive = true;
         },
-        OnFixedUpdate = delegate
+        OnUpdate = delegate
         {
-            Melon<SMBZ_64.Core>.Logger.Msg($"mario {sm64.marioState.faceAngle}");
+            float yaw = sm64.marioState.twirlYaw;
+
+            bool oldActive = base.HitBox_0.IsActive;
+            base.HitBox_0.IsActive = (yaw >= 0.5f && yaw <= 2.25f) || (yaw >= -3.04f && yaw <= -0.68f);
+            if (base.HitBox_0.IsActive && !oldActive)
+            {
+                typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                    new HitBoxDamageParameters
+                    {
+                        Owner = this,
+                        Tag = base.tag,
+                        Damage = 1f,
+                        HitStun = 0.5f,
+                        GetLaunch = () => new Vector2(-sm64.marioState.velocity[0] / 3, 0),
+                        FreezeTime = 0.05f,
+                        Priority = BattleCache.PriorityType.Medium,
+                        HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                        OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
+                    }
+                );
+            }
         }
     };
 
@@ -479,6 +494,8 @@ public class Mario64Control : BaseCharacter
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_SLIDE_KICK, 0), AttBun_SlideKick);
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_SLIDE_KICK_SLIDE, 0), AttBun_SlideKickSlide);
 
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_TWIRL_LAND, 0), AttBun_AttackEnd);
+
         SM64AttacksAnimFrame.Add(new AnimKeyPair(MARIO_ANIM_GROUND_KICK, 0), AttBun_GroundKick);
         SM64AttacksAnimFrame.Add(new AnimKeyPair(MARIO_ANIM_GROUND_KICK, 4), AttBun_AttackEnd);
         SM64AttacksAnimFrame.Add(new AnimKeyPair(MARIO_ANIM_AIR_KICK, 0), AttBun_AirKick);
@@ -568,7 +585,8 @@ public class Mario64Control : BaseCharacter
             MovementRushStateENUM movRush =
                 (MovementRushStateENUM)typeof(BaseCharacter).GetField("MovementRushState", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c);
 
-            c.CurrentAttackData.OnAnimationStart();
+            if (c.CurrentAttackData != null)
+                c.CurrentAttackData.OnAnimationStart();
             Melon<SMBZ_64.Core>.Logger.Msg($"OnAnimationStart {c.CurrentAttackData.AnimationName} {c.CurrentAttackData.AnimationNameHash == c.ASN_MR_Dodge} {c.GetPlayerState()} {movRush} {c.LastMovementRushState} {c.CurrentAttackData.OnAnimationStart_HasExecuted}");
         }
     }
@@ -901,7 +919,6 @@ public class Mario64Control : BaseCharacter
         if (SM64AttacksActionArg.ContainsKey(k))
         {
             PrepareAnAttack(SM64AttacksActionArg[k]);
-            base.HitBox_0.IsActive = true;
         }
         else
         {

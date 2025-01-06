@@ -78,6 +78,7 @@ namespace LibSM64
             [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 3)]
             public float[] velocity;
             public float faceAngle;
+            public float twirlYaw;
             public short health;
             public uint action;
             public uint actionArg;
