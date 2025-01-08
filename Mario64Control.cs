@@ -908,6 +908,8 @@ public class Mario64Control : BaseCharacter
         if (sm64 == null) return;
 
         sm64.SetAction(ACT_TWIRLING);
+        if (sm64.marioState.velocity[1] < 0)
+            sm64.SetVelocity(new Vector3(sm64.marioState.velocity[0], 30, 0));
         PrepareAnAttack(AttBun_Twirl);
     }
 
