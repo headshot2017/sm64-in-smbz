@@ -155,11 +155,15 @@ namespace LibSM64
         public void SetAction(SM64Constants.Action action)
         {
             Interop.MarioSetAction(marioId, action);
+            for (int i = 0; i < states.Length; i++)
+                states[i].action = (uint)action;
         }
 
         public void SetAction(SM64Constants.Action action, uint actionArg)
         {
             Interop.MarioSetAction(marioId, action, actionArg);
+            for (int i = 0; i < states.Length; i++)
+                states[i].action = (uint)action;
         }
 
         public void SetActionArg2(uint actionArg2)
@@ -175,6 +179,8 @@ namespace LibSM64
         public void SetAnim(SM64Constants.MarioAnimID animID)
         {
             Interop.MarioSetAnim(marioId, animID);
+            for (int i = 0; i < states.Length; i++)
+                states[i].animID = (short)animID;
         }
 
         public void SetAnimFrame(short frame)
