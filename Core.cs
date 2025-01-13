@@ -116,7 +116,7 @@ namespace SMBZ_64
             switch (buildIndex)
             {
                 case 3:
-                    BattleStart();
+                    BattleTerrain();
                     break;
 
                 case 6:
@@ -165,7 +165,16 @@ namespace SMBZ_64
         public override void OnFixedUpdate()
         {
             foreach (var o in _surfaceObjects)
+            {
+                BattleBackgroundManager BBManager = (BattleBackgroundManager)typeof(BattleController).GetField("BackgroundManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
+                float GroundPositionY = (float)BBManager.GetType().GetField("GroundPositionY", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BBManager);
+
+                Vector3 pos = o.position;
+                pos.y = GroundPositionY;
+                o.SetPosition(pos);
+
                 o.contextFixedUpdate();
+            }
 
             foreach (var o in _marios)
             {
@@ -219,15 +228,17 @@ namespace SMBZ_64
         }
 
 
-        void BattleStart()
+        public void BattleTerrain()
         {
+            BattleBackgroundManager BBManager = (BattleBackgroundManager)typeof(BattleController).GetField("BackgroundManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
+            float GroundPositionY = (float)BBManager.GetType().GetField("GroundPositionY", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BBManager);
+
             for (int i = -10; i <= 10; i++)
             {
-                Vector3 P = new Vector3(128 * i, 0, -1);
+                Vector3 P = new Vector3(128 * i, GroundPositionY, -1);
                 GameObject surfaceObj = new GameObject("SM64_SURFACE");
                 surfaceObj.transform.position = P;
                 MeshCollider surfaceMesh = surfaceObj.AddComponent<MeshCollider>();
-                surfaceObj.AddComponent<SM64StaticTerrain>();
                 Mesh mesh = new Mesh();
                 mesh.name = "SM64_SURFACE_MESH";
                 mesh.SetVertices(
@@ -239,8 +250,10 @@ namespace SMBZ_64
                 );
                 mesh.SetTriangles(new int[] { 0, 1, 2, 3, 4, 5 }, 0);
                 surfaceMesh.sharedMesh = mesh;
+                surfaceObj.AddComponent<SM64DynamicTerrain>();
             }
-            RefreshStaticTerrain();
+
+            LoggerInstance.Msg($"ground pos: {GroundPositionY}");
         }
 
         void SetupCharSelect()
@@ -273,10 +286,9 @@ namespace SMBZ_64
             private static bool Prefix(CharacterControl __instance)
             {
                 ModSettings.Player player = ModSettings.GetPlayerSettings(__instance.PlayerDataReference.PlayerIndex);
-                if (__instance.PlayerDataReference.InitialCharacterData == BattleCache.ins.CharacterData_Mario)
+                if (__instance.PlayerDataReference.InitialCharacterData == BattleCache.ins.CharacterData_Mario && player.Mario_SM64_IsEnabled.Value)
                 {
-                    __instance.PlayerDataReference.CurrentCharacterData =
-                        player.Mario_SM64_IsEnabled.Value ? Mario64Data : BattleCache.ins.CharacterData_Mario;
+                    __instance.PlayerDataReference.CurrentCharacterData = Mario64Data;
                 }
 
                 return true;
