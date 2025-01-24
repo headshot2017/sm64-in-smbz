@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Linq;
+using MelonLoader;
 
 namespace LibSM64
 {
@@ -28,6 +28,7 @@ namespace LibSM64
         {
             //context = GameObject.FindObjectOfType<SM64Context>();
             //context.RegisterSurfaceObject( this );
+            Melon<SMBZ_64.Core>.Instance.RegisterSurfaceObject(this);
 
             _position = transform.position;
             _rotation = transform.rotation;
@@ -46,6 +47,7 @@ namespace LibSM64
             if( Interop.isGlobalInit )
             {
                 //context.UnregisterSurfaceObject( this );
+                Melon<SMBZ_64.Core>.Instance.UnregisterSurfaceObject(this);
                 Interop.SurfaceObjectDelete( _surfaceObjectId );
             }
         }
