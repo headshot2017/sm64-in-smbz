@@ -1037,32 +1037,43 @@ s32 act_emerge_from_pipe(struct MarioState *m) {
 }
 
 s32 act_spawn_spin_airborne(struct MarioState *m) {
-    // entered water, exit action
-    if (m->pos[1] < m->waterLevel - 100) {
-        load_level_init_text(0);
-        return set_water_plunge_action(m);
-    }
+    switch(m->actionArg)
+    {
+        case 0:
+            // entered water, exit action
+            if (m->pos[1] < m->waterLevel - 100) {
+                load_level_init_text(0);
+                return set_water_plunge_action(m);
+            }
 
-    // updates all velocity variables based on m->forwardVel
-    mario_set_forward_vel(m, m->forwardVel);
+            // updates all velocity variables based on m->forwardVel
+            mario_set_forward_vel(m, m->forwardVel);
 
-    // landed on floor, play spawn land animation
-    if (perform_air_step(m, 0.0) == AIR_STEP_LANDED) {
-        play_mario_landing_sound(m, SOUND_ACTION_TERRAIN_LANDING);
-        set_mario_action(m, ACT_SPAWN_SPIN_LANDING, 0);
-    }
+            // landed on floor, play spawn land animation
+            if (perform_air_step(m, 0.0) == AIR_STEP_LANDED) {
+                play_mario_landing_sound(m, SOUND_ACTION_TERRAIN_LANDING);
+                set_mario_action(m, ACT_SPAWN_SPIN_LANDING, 0);
+            }
 
-    // is 300 units above floor, spin and play woosh sounds
-    if (m->actionState == 0 && m->pos[1] - m->floorHeight > 300.0f) {
-        if (set_mario_animation(m, MARIO_ANIM_FORWARD_SPINNING) == 0) { // first anim frame
-            play_sound(SOUND_ACTION_SPIN, m->marioObj->header.gfx.cameraToObject);
-        }
-    }
+            // is 300 units above floor, spin and play woosh sounds
+            if (m->actionState == 0 && m->pos[1] - m->floorHeight > 300.0f) {
+                if (set_mario_animation(m, MARIO_ANIM_FORWARD_SPINNING) == 0) { // first anim frame
+                    play_sound(SOUND_ACTION_SPIN, m->marioObj->header.gfx.cameraToObject);
+                }
+            }
 
-    // under 300 units above floor, enter freefall animation
-    else {
-        m->actionState = 1;
-        set_mario_animation(m, MARIO_ANIM_GENERAL_FALL);
+            // under 300 units above floor, enter freefall animation
+            else {
+                m->actionState = 1;
+                set_mario_animation(m, MARIO_ANIM_GENERAL_FALL);
+            }
+            break;
+
+        case 1:
+            if (set_mario_animation(m, MARIO_ANIM_FORWARD_SPINNING) == 0) { // first anim frame
+                play_sound(SOUND_ACTION_SPIN, m->marioObj->header.gfx.cameraToObject);
+            }
+            break;
     }
 
     return FALSE;
