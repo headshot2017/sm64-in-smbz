@@ -713,7 +713,7 @@ s32 act_twirling(struct MarioState *m) {
     m->twirlYaw += m->angleVel[1];
 
     set_mario_animation(m, m->actionArg == 0 ? MARIO_ANIM_START_TWIRL : MARIO_ANIM_TWIRL);
-    if (is_anim_past_end(m)) {
+    if (is_anim_past_end(m) && m->actionArg == 0) {
         m->actionArg = 1;
     }
 
@@ -723,19 +723,23 @@ s32 act_twirling(struct MarioState *m) {
 
     update_lava_boost_or_twirling(m);
 
-    switch (perform_air_step(m, 0)) {
-        case AIR_STEP_LANDED:
-            set_mario_action(m, ACT_TWIRL_LAND, 0);
-            break;
+    if (m->actionArg != 2) {
+        switch (perform_air_step(m, 0)) {
+            case AIR_STEP_LANDED:
+                set_mario_action(m, ACT_TWIRL_LAND, 0);
+                break;
 
-        case AIR_STEP_HIT_WALL:
-            mario_bonk_reflection(m, FALSE);
-            break;
+            case AIR_STEP_HIT_WALL:
+                mario_bonk_reflection(m, FALSE);
+                break;
 
-        case AIR_STEP_HIT_LAVA_WALL:
-            lava_boost_on_wall(m);
-            break;
+            case AIR_STEP_HIT_LAVA_WALL:
+                lava_boost_on_wall(m);
+                break;
+        }
     }
+    else
+        perform_air_step(m, 0);
 
     m->marioObj->header.gfx.angle[1] += m->twirlYaw;
     return FALSE;
@@ -1675,16 +1679,18 @@ s32 act_jump_kick(struct MarioState *m) {
 
     update_air_without_turn(m);
 
-    switch (perform_air_step(m, 0)) {
-        case AIR_STEP_LANDED:
-            if (!check_fall_damage_or_get_stuck(m, ACT_HARD_BACKWARD_GROUND_KB)) {
-                set_mario_action(m, ACT_FREEFALL_LAND, 0);
-            }
-            break;
+    if (!m->actionArg) {
+        switch (perform_air_step(m, 0)) {
+            case AIR_STEP_LANDED:
+                if (!check_fall_damage_or_get_stuck(m, ACT_HARD_BACKWARD_GROUND_KB)) {
+                    set_mario_action(m, ACT_FREEFALL_LAND, 0);
+                }
+                break;
 
-        case AIR_STEP_HIT_WALL:
-            mario_set_forward_vel(m, 0.0f);
-            break;
+            case AIR_STEP_HIT_WALL:
+                mario_set_forward_vel(m, 0.0f);
+                break;
+        }
     }
 
     return FALSE;
