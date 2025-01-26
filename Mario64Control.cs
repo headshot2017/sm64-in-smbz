@@ -347,7 +347,7 @@ public class Mario64Control : BaseCharacter
                         Tag = base.tag,
                         Damage = 1.2f,
                         HitStun = 0.5f,
-                        GetLaunch = () => new Vector2(-sm64.marioState.velocity[0] / 3, 0),
+                        GetLaunch = () => new Vector2(-sm64.marioState.velocity[0] / 3.5f, 0),
                         FreezeTime = 0.05f,
                         Priority = BattleCache.PriorityType.Medium,
                         HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
