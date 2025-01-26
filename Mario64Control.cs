@@ -582,7 +582,7 @@ public class Mario64Control : BaseCharacter
             MovementRushManager MRManager = (MovementRushManager)typeof(BattleController).GetField("MovementRushManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
             MovementRushManager.MRDataStore activeMovementRush = MRManager.ActiveMovementRush;
             if (activeMovementRush.MovementRushType != MovementRushManager.MovementRushTypeENUM.Air)
-                sm64input.joyOverride = -Vector2.right * FaceDir;
+                sm64input.joyOverride = -Vector2.right * (activeMovementRush.IsDirectionOfRushRight ? 1 : -1);
         }
     }
 
@@ -617,89 +617,6 @@ public class Mario64Control : BaseCharacter
         if (sm64 != null)
             sm64.SetFaceAngle(FaceDir / 2f * -(float)Math.PI);
     }
-
-    /*
-    protected override void Update_MovementRushAnimator()
-    {
-        MovementRushManager manager = (MovementRushManager)typeof(BattleController).GetField("MovementRushManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
-        bool flag = manager.ActiveMovementRush?.IsDirectionOfRushRight ?? true;
-        BattleStateENUM BattleState = (BattleStateENUM)typeof(BattleController).GetField("BattleState", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
-        CharacterControl MyCharacterControl = (CharacterControl)GetType().GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
-
-        if (BattleState == BattleController.BattleStateENUM.MovementRush_Grounded)
-        {
-            if (!IsOnGround || IsHurt || GetPlayerState() != 0 || GetMovementRushState() != MovementRushStateENUM.Idle)
-            {
-                return;
-            }
-
-            if (flag)
-            {
-                if (MyCharacterControl.IsInputtingRight)
-                {
-                    //PlayAnimationIfNotAlready(ASN_MR_Ground_MoveForward, ASN_MR_Ground_Land, ASN_MR_Air_Idle);
-                }
-                else if (GetCurrentAnimationState() == ASN_MR_Ground_MoveForward)
-                {
-                    // PlayAnimationIfNotAlready(ASN_MR_Ground_Idle, ASN_MR_Ground_Land);
-                }
-            }
-            else
-            {
-                if (MyCharacterControl.IsInputtingLeft)
-                {
-                    //PlayAnimationIfNotAlready(ASN_MR_Ground_MoveForward, ASN_MR_Ground_Land);
-                }
-                else if (GetCurrentAnimationState() == ASN_MR_Ground_MoveForward)
-                {
-                    //PlayAnimationIfNotAlready(ASN_MR_Ground_Idle, ASN_MR_Ground_Land);
-                }
-            }
-        }
-        else
-        {
-            if (BattleState != BattleController.BattleStateENUM.MovementRush_Aerial)
-            {
-                return;
-            }
-
-            if (!IsHurt && GetPlayerState() == PlayerStateENUM.Idle && GetMovementRushState() == MovementRushStateENUM.Idle)
-            {
-                if (GetCurrentAnimationState() == ASN_MR_Air_Idle)
-                {
-                    if (MyCharacterControl.IsInputtingUp)
-                    {
-                        PlayAnimationIfNotAlready(ASN_MR_Air_MoveUpward);
-                    }
-                    else if (MyCharacterControl.IsInputtingDown)
-                    {
-                        PlayAnimationIfNotAlready(ASN_MR_Air_MoveDownward);
-                    }
-                    else if (MyCharacterControl.IsInputtingLeft || MyCharacterControl.IsInputtingRight)
-                    {
-                        PlayAnimationIfNotAlready(ASN_MR_Air_MoveForward);
-                    }
-                }
-                else if (!MyCharacterControl.IsInputtingRight && !MyCharacterControl.IsInputtingLeft && !MyCharacterControl.IsInputtingUp && !MyCharacterControl.IsInputtingDown)
-                {
-                    PlayAnimationIfNotAlready(ASN_MR_Air_Idle);
-                }
-                else if (MyCharacterControl.IsInputtingUp)
-                {
-                    PlayAnimationIfNotAlready(ASN_MR_Air_MoveUpward);
-                }
-                else if (MyCharacterControl.IsInputtingDown)
-                {
-                    PlayAnimationIfNotAlready(ASN_MR_Air_MoveDownward);
-                }
-                else if (MyCharacterControl.IsInputtingLeft || MyCharacterControl.IsInputtingRight)
-                {
-                    PlayAnimationIfNotAlready(ASN_MR_Air_MoveForward);
-                }
-            }
-        }
-    }
-    */
 
     [HarmonyPatch(typeof(BaseCharacter), "PrepareAnAttack", new Type[] { typeof(AttackBundle), typeof(float) })]
     private static class PrepareAnAttackPatch
@@ -742,12 +659,16 @@ public class Mario64Control : BaseCharacter
                     c.SetGravityOverride(0f);
                     c.OnMovementRush_Dodge();
                     c.movRushTimer = 0;
+                    c.OnAttackAnimation_QueueCustom(null);
+                    c.Comp_InterplayerCollider.Disable();
+                    c.sm64.SetAction(ACT_TWIRLING, 2);
                 },
                 OnInterrupt = delegate
                 {
                     c.SetField("IsIntangible", false);
                     c.MovementRush_SetDefaultGravityAndDrag();
                     c.SetMovementRushState(MovementRushStateENUM.Idle);
+                    c.Comp_InterplayerCollider.Enable();
                 },
                 OnAnimationEnd = delegate
                 {
@@ -756,13 +677,18 @@ public class Mario64Control : BaseCharacter
                     c.SetMovementRushState(MovementRushStateENUM.Idle);
                     c.SetPlayerState(PlayerStateENUM.Idle);
                     c.CurrentAttackData = null;
+                    c.Comp_InterplayerCollider.Enable();
+                    c.sm64.SetAction(ACT_FREEFALL);
                     //c.PlayAnimationIfNotAlready(ASN_MR_Air_Idle);
                 },
                 OnFixedUpdate = delegate
                 {
                     c.movRushTimer += Time.fixedDeltaTime;
                     if (c.movRushTimer > 0.55f)
+                    {
+                        c.OnAttackAnimation_QueueCustom(null);
                         c.CurrentAttackData.OnAnimationEnd();
+                    }
                 }
             };
             bundle.SetCustomeQueue(delegate
@@ -770,7 +696,6 @@ public class Mario64Control : BaseCharacter
                 if (bundle.CustomQueueCallCount == 0)
                 {
                     float DodgeSpeed = (float)c.GetField("DodgeSpeed");
-                    Melon<SMBZ_64.Core>.Logger.Msg("ayo");
                     if (!directionOverride.HasValue)
                     {
                         /*
@@ -1001,6 +926,7 @@ public class Mario64Control : BaseCharacter
                     c.PlayAnimationIfNotAlready(c.ASN_MR_Air_Idle);
                     c.Comp_InterplayerCollider.Enable();
                     c.sm64.SetAction(ACT_FREEFALL);
+                    c.CurrentAttackData = null;
                 },
                 OnFixedUpdate = delegate
                 {
@@ -1030,43 +956,26 @@ public class Mario64Control : BaseCharacter
                 direction = c.GetVelocity().normalized;
             }
 
-            Melon<SMBZ_64.Core>.Logger.Msg("1");
             c.InterruptAndNullifyPreparedAttack();
-            Melon<SMBZ_64.Core>.Logger.Msg("2");
             c.SetField("IsFacingRight", direction.Value.x >= 0f);
-            Melon<SMBZ_64.Core>.Logger.Msg("3");
             c.RotateTowardTargetDirection(direction.Value);
-            Melon<SMBZ_64.Core>.Logger.Msg("4");
             c.FlipSpriteByFacingDirection();
-            Melon<SMBZ_64.Core>.Logger.Msg("5");
             typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(c.HitBox_0, null);
-            Melon<SMBZ_64.Core>.Logger.Msg("6");
             c.Comp_InterplayerCollider.Disable();
-            Melon<SMBZ_64.Core>.Logger.Msg("7");
             c.PrepareAnAttack(new AttackBundle
             {
                 AnimationNameHash = c.ASN_MR_Strike_Attack,
                 OnAnimationStart = delegate
                 {
-                    Melon<SMBZ_64.Core>.Logger.Msg("start 1");
                     c.SetVelocity(direction.Value * (0f - StrikeEndSpeed));
-                    Melon<SMBZ_64.Core>.Logger.Msg("start 2");
                     c.SetGravityOverride(0f);
-                    Melon<SMBZ_64.Core>.Logger.Msg("start 3");
                     c.SetField("DragOverride", 1f);
-                    Melon<SMBZ_64.Core>.Logger.Msg("start 4");
                     c.SetMovementRushState(MovementRushStateENUM.IsWhiffing);
-                    Melon<SMBZ_64.Core>.Logger.Msg("start 5");
                     c.movRushTimer = 0;
-                    Melon<SMBZ_64.Core>.Logger.Msg("start 6");
                     c.sm64.SetAction(ACT_CUSTOM_ANIM);
-                    Melon<SMBZ_64.Core>.Logger.Msg("start 7");
                     c.sm64.SetAnim(MARIO_ANIM_SLIDE_KICK);
-                    Melon<SMBZ_64.Core>.Logger.Msg("start 8");
                     c.sm64.SetAnimFrame(8);
-                    Melon<SMBZ_64.Core>.Logger.Msg("start 9");
                     c.sm64.SetFaceAngle(c.FaceDir / 2f * -(float)Math.PI);
-                    Melon<SMBZ_64.Core>.Logger.Msg("start 10");
                 },
                 OnInterrupt = delegate
                 {
@@ -1093,9 +1002,7 @@ public class Mario64Control : BaseCharacter
                         c.CurrentAttackData.OnAnimationEnd();
                 }
             });
-            Melon<SMBZ_64.Core>.Logger.Msg("8");
             c.OnMovementRush_Clash();
-            Melon<SMBZ_64.Core>.Logger.Msg("9");
             return false;
         }
     }
@@ -1194,7 +1101,7 @@ public class Mario64Control : BaseCharacter
                     c.ResetRotation();
                     c.SetMovementRushState(MovementRushStateENUM.Idle);
                     c.SetPlayerState(PlayerStateENUM.Idle);
-                    //PlayAnimationIfNotAlready(ASN_MR_Air_Idle);
+                    c.PlayAnimationIfNotAlready(c.ASN_MR_Air_Idle);
                     c.Comp_InterplayerCollider.Enable();
                     c.CurrentAttackData = null;
                     c.sm64.SetAction(ACT_FREEFALL);
@@ -1227,7 +1134,7 @@ public class Mario64Control : BaseCharacter
             MethodInfo AirRushCollider_SetActive = BBManager.GetType().GetMethod("AirRushCollider_SetActive", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(bool) }, null);
 
             Vector2 velocity = new Vector2(5 * c.FaceDir, Mathf.Lerp(15f, 5f, (c.transform.position.y - GroundPositionY) / 15f));
-            c.SetVelocity(velocity);
+            c.SetVelocity(velocity + new Vector2(0, 1.5f));
             c.SetGravityOverride(0.1f);
             c.SetField("DragOverride", 1f);
             target.CharacterGO.transform.position = c.transform.position + new Vector3(c.FaceDir, 0f);
@@ -1274,6 +1181,7 @@ public class Mario64Control : BaseCharacter
                     c.HitBox_0.transform.localScale = new Vector2(1.25f, 1f);
                     c.HitBox_0.IsActive = false;
                     c.movRushTimer = 0;
+                    c.sm64.SetAction(ACT_SPAWN_SPIN_AIRBORNE, 1);
                 },
                 OnInterrupt = delegate
                 {
@@ -1294,6 +1202,11 @@ public class Mario64Control : BaseCharacter
                 OnFixedUpdate = delegate
                 {
                     c.movRushTimer += Time.fixedDeltaTime;
+                    if (c.movRushTimer > 0.9f && c.sm64.marioState.action != (uint)ACT_JUMP_KICK)
+                    {
+                        c.sm64.SetAction(ACT_JUMP_KICK, 1);
+                        c.sm64.SetAngle((float)Math.PI / 6, c.sm64.marioState.faceAngle, 0);
+                    }
                     if (c.movRushTimer > 1f)
                         c.HitBox_0.IsActive = true;
                 }
@@ -1665,7 +1578,7 @@ public class Mario64Control : BaseCharacter
 
     public void OnMarioAdvanceAnimFrame(SM64Constants.MarioAnimID animID, short animFrame)
     {
-        if (sm64.marioState.action == (uint)ACT_CUSTOM_ANIM || sm64.marioState.action == (uint)ACT_CUSTOM_ANIM_TO_ACTION)
+        if (GetMovementRushState() != MovementRushStateENUM.Inactive || sm64.marioState.action == (uint)ACT_CUSTOM_ANIM || sm64.marioState.action == (uint)ACT_CUSTOM_ANIM_TO_ACTION)
             return;
 
         AnimKeyPair k = new AnimKeyPair(animID, animFrame);
