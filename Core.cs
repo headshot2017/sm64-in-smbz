@@ -17,6 +17,7 @@ namespace SMBZ_64
         static List<SM64DynamicTerrain> _surfaceObjects = new List<SM64DynamicTerrain>();
 
         public static CharacterData_SO Mario64Data = null;
+        public bool showError;
 
         public override void OnInitializeMelon()
         {
@@ -28,9 +29,25 @@ namespace SMBZ_64
             catch (FileNotFoundException)
             {
                 LoggerInstance.Msg("Super Mario 64 US ROM 'sm64.us.z64' not found");
+                showError = true;
                 return;
             }
             Interop.GlobalInit(rom);
+        }
+
+        public override void OnGUI()
+        {
+            if (showError)
+            {
+                GUI.BeginGroup(new Rect(Screen.width / 2 - 160, Screen.height / 2 - 120, 320, 240));
+                GUI.Box(new Rect(0, 0, 320, 240), "SMBZ_64");
+                GUI.Label(new Rect(32, 32, 320-64, 240-64), "Super Mario 64 US ROM not found.\nPlease supply a ROM with the filename 'sm64.us.z64' in the folder where the EXE is located");
+
+                if (GUI.Button(new Rect(20, 240-64-8, 320-40, 64), "OK"))
+                    showError = false;
+
+                GUI.EndGroup();
+            }
         }
 
         public override void OnLateInitializeMelon()
