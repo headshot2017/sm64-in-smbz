@@ -426,7 +426,7 @@ public class Mario64Control : BaseCharacter
             sm64Obj = new GameObject("SM64_MARIO");
             sm64Obj.transform.position = new Vector3(transform.position.x, transform.position.y, -1);
             sm64input = sm64Obj.AddComponent<SM64InputSMBZG>();
-            sm64input.c = (CharacterControl)GetType().GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+            sm64input.c = (CharacterControl)GetField("MyCharacterControl");
             sm64 = sm64Obj.AddComponent<SM64Mario>();
             sm64.smbzChar = sm64input.c;
             sm64.changeActionCallback = SMBZ_64.Core.OnMarioChangeAction;
@@ -628,7 +628,7 @@ public class Mario64Control : BaseCharacter
 
             Mario64Control c = (Mario64Control)__instance;
             MovementRushStateENUM movRush =
-                (MovementRushStateENUM)typeof(BaseCharacter).GetField("MovementRushState", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c);
+                (MovementRushStateENUM)c.GetMovementRushState();
 
             if (c.CurrentAttackData != null && c.CurrentAttackData.OnAnimationStart != null)
                 c.CurrentAttackData.OnAnimationStart();
@@ -1017,7 +1017,7 @@ public class Mario64Control : BaseCharacter
 
             Mario64Control c = (Mario64Control)__instance;
             FieldInfo IsFacingRightField = c.GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance);
-            float StrikeLaunch = (float)c.GetType().GetField("StrikeLaunch", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c);
+            float StrikeLaunch = (float)c.GetField("StrikeLaunch");
             MovementRushManager manager = (MovementRushManager)typeof(BattleController).GetField("MovementRushManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
 
             c.InterruptAndNullifyPreparedAttack();
@@ -1171,7 +1171,7 @@ public class Mario64Control : BaseCharacter
                             CanInitiateBurst = false,
                             OnHitCallback = delegate (BaseCharacter target, bool wasBlocked)
                             {
-                                CharacterControl MyCharacterControl = (CharacterControl)typeof(BaseCharacter).GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c);
+                                CharacterControl MyCharacterControl = (CharacterControl)c.GetField("MyCharacterControl");
                                 CharacterControl target_MyCharacterControl = (CharacterControl)typeof(BaseCharacter).GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(target);
                                 MRManager.EndMovementRush(MyCharacterControl, target_MyCharacterControl);
                             }
@@ -1229,7 +1229,7 @@ public class Mario64Control : BaseCharacter
         FieldInfo isChargingField = typeof(PursueBundle).GetField("isCharging", BindingFlags.NonPublic | BindingFlags.Instance);
         FieldInfo IsFacingRightField = GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance);
         MethodInfo PlaySoundMethod = typeof(SoundCache).GetMethod("PlaySound", BindingFlags.NonPublic | BindingFlags.Instance, null, new[]{typeof(AudioClip), typeof(float), typeof(bool), typeof(float?), typeof(float), typeof(bool)}, null);
-        bool IsFrozen = (bool)GetType().GetField("IsFrozen", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+        bool IsFrozen = (bool)GetField("IsFrozen");
 
         if (IsFrozen || PursueData == null)
         {
@@ -1271,7 +1271,7 @@ public class Mario64Control : BaseCharacter
                 PursueData.IsPreping = false;
                 isChargingField.SetValue(PursueData, false);
                 SetPlayerState(PlayerStateENUM.Pursuing);
-                GetType().GetField("ComboSwingCounter", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, 0);
+                SetField("ComboSwingCounter", 0);
                 float num = Helpers.Vector2ToDegreeAngle_180(base.transform.position, PursueData.Target.transform.position);
                 IsFacingRightField.SetValue(this, -90f <= num && num <= 90f);
                 PursueData.Direction = ((bool)IsFacingRightField.GetValue(this) ? Vector2.right : Vector2.left);
@@ -1455,8 +1455,8 @@ public class Mario64Control : BaseCharacter
                 {
                     bool t_IsNPC = (t != null) ? (bool)t.GetType().GetField("IsNPC", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(t) : false;
                     MovementRushManager manager = (MovementRushManager)typeof(BattleController).GetField("MovementRushManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
-                    bool IsFacingRight = (bool)GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
-                    CharacterControl MyCharacterControl = (CharacterControl)GetType().GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+                    bool IsFacingRight = (bool)GetField("IsFacingRight");
+                    CharacterControl MyCharacterControl = (CharacterControl)GetField("MyCharacterControl");
                     CharacterControl targetControl = (CharacterControl)GetType().GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(t);
 
                     if (victoryStrikeType == BurstDataStore.VictoryStrikeENUM.MovementRushStarter && SaveData.Data.MovementRush_IsEnabled_ViaCriticalStrikes && t != null && !t_IsNPC && t.IsHurt)
