@@ -52,6 +52,8 @@ namespace SMBZ_64
 
         public override void OnLateInitializeMelon()
         {
+            if (!Interop.isGlobalInit) return;
+
             // Create a clone of Mario's character data
             GameObject Mario64Prefab = GameObject.Instantiate(BattleCache.ins.CharacterData_Mario.Prefab_BattleGameObject);
             Mario64Prefab.name = "Mario64";
