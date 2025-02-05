@@ -877,6 +877,10 @@ s32 check_common_landing_cancels(struct MarioState *m, u32 action) {
         return set_mario_action(m, ACT_PUNCHING, 0);
     }
 
+    if (m->input & INPUT_Z_DOWN) {
+        return set_mario_action(m, ACT_START_CROUCHING, 0);
+    }
+
     return FALSE;
 }
 

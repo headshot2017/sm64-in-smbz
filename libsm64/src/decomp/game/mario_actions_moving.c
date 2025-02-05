@@ -1078,6 +1078,11 @@ s32 act_braking(struct MarioState *m) {
         return set_mario_action(m, ACT_MOVE_PUNCHING, 0);
     }
 
+    // added for SMBZ-64
+    if (m->input & INPUT_Z_PRESSED) {
+        return set_mario_action(m, ACT_CROUCH_SLIDE, 0);
+    }
+
     switch (perform_ground_step(m)) {
         case GROUND_STEP_LEFT_GROUND:
             set_mario_action(m, ACT_FREEFALL, 0);
@@ -1119,7 +1124,8 @@ s32 act_decelerating(struct MarioState *m) {
             return set_mario_action(m, ACT_WALKING, 0);
         }
 
-        if (m->input & INPUT_Z_PRESSED) {
+        // SMBZ-64: DOWN instead of PRESSED
+        if (m->input & INPUT_Z_DOWN) {
             return set_mario_action(m, ACT_CROUCH_SLIDE, 0);
         }
     }
@@ -1834,6 +1840,11 @@ s32 common_landing_cancels(struct MarioState *m, struct LandingAction *landingAc
 
     if (m->input & INPUT_A_PRESSED) {
         return setAPressAction(m, landingAction->aPressedAction, 0);
+    }
+
+    // added for SMBZ-64
+    if (m->input & INPUT_Z_PRESSED) {
+        return set_mario_action(m, ACT_START_CROUCHING, 0);
     }
 
     if (m->input & INPUT_OFF_FLOOR) {
