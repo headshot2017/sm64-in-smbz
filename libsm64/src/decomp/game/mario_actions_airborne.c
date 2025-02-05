@@ -2066,6 +2066,8 @@ s32 act_special_triple_jump(struct MarioState *m) {
 s32 act_crouch_air(struct MarioState *m)
 {
 	set_mario_animation(m, MARIO_ANIM_START_CROUCHING);
+	if (m->actionArg)
+		m->marioObj->header.gfx.animInfo.animFrame = m->marioObj->header.gfx.animInfo.curAnim->loopEnd-1;
 
 	if (!(m->input & INPUT_Z_DOWN)) {
 		return set_mario_action(m, ACT_FREEFALL, 0);

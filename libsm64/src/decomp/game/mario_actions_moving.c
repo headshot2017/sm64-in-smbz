@@ -813,7 +813,8 @@ s32 act_walking(struct MarioState *m) {
         return set_mario_action(m, ACT_TURNING_AROUND, 0);
     }
 
-    if (m->input & INPUT_Z_PRESSED) {
+    // SMBZ-64: DOWN instead of PRESSED
+    if (m->input & INPUT_Z_DOWN) {
         return set_mario_action(m, ACT_CROUCH_SLIDE, 0);
     }
 
@@ -978,7 +979,7 @@ s32 act_turning_around(struct MarioState *m) {
     }
 
     // added for SMBZ-64
-    if (m->input & INPUT_Z_PRESSED) {
+    if (m->input & INPUT_Z_DOWN) {
         return set_mario_action(m, ACT_CROUCH_SLIDE, 0);
     }
 
@@ -1039,7 +1040,7 @@ s32 act_finish_turning_around(struct MarioState *m) {
     }
 
     // added for SMBZ-64
-    if (m->input & INPUT_Z_PRESSED) {
+    if (m->input & INPUT_Z_DOWN) {
         return set_mario_action(m, ACT_CROUCH_SLIDE, 0);
     }
 
@@ -1079,7 +1080,7 @@ s32 act_braking(struct MarioState *m) {
     }
 
     // added for SMBZ-64
-    if (m->input & INPUT_Z_PRESSED) {
+    if (m->input & INPUT_Z_DOWN) {
         return set_mario_action(m, ACT_CROUCH_SLIDE, 0);
     }
 
@@ -1186,7 +1187,8 @@ s32 act_hold_decelerating(struct MarioState *m) {
         return set_jumping_action(m, ACT_HOLD_JUMP, 0);
     }
 
-    if (m->input & INPUT_Z_PRESSED) {
+    // SMBZ-64: DOWN instead of PRESSED
+    if (m->input & INPUT_Z_DOWN) {
         return drop_and_set_mario_action(m, ACT_CROUCH_SLIDE, 0);
     }
 
@@ -1489,6 +1491,10 @@ s32 act_crouch_slide(struct MarioState *m) {
 
     if (m->input & INPUT_ABOVE_SLIDE) {
         return set_mario_action(m, ACT_BUTT_SLIDE, 0);
+    }
+
+    if (m->input & INPUT_OFF_FLOOR) {
+        return set_mario_action(m, ACT_CROUCH_AIR, 1);
     }
 
     if (m->actionTimer < 30) {
@@ -1843,7 +1849,7 @@ s32 common_landing_cancels(struct MarioState *m, struct LandingAction *landingAc
     }
 
     // added for SMBZ-64
-    if (m->input & INPUT_Z_PRESSED) {
+    if (m->input & INPUT_Z_DOWN) {
         return set_mario_action(m, ACT_START_CROUCHING, 0);
     }
 
