@@ -243,9 +243,6 @@ SM64_LIB_FN void sm64_mario_tick( int32_t marioId, const struct SM64MarioInputs 
     gController.stickY = 64.0f * inputs->stickY;
     gController.stickMag = sqrtf( gController.stickX*gController.stickX + gController.stickY*gController.stickY );
 
-    uint32_t oldAction = gMarioState->action;
-    uint32_t oldActionArg = gMarioState->actionArg;
-
     apply_mario_platform_displacement();
     bhv_mario_update();
     update_mario_platform(); // TODO platform grabbed here and used next tick could be a use-after-free

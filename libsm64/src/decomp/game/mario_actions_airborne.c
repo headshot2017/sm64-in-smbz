@@ -450,11 +450,9 @@ s32 act_jump(struct MarioState *m) {
     }
 
     // SMBZ-G
-    /*
     if (m->input & INPUT_Z_PRESSED) {
-        return set_mario_action(m, ACT_GROUND_POUND, 0);
+        return set_mario_action(m, ACT_CROUCH_AIR, 0);
     }
-    */
 
     play_mario_sound(m, SOUND_ACTION_TERRAIN_JUMP, 0);
     common_air_action_step(m, ACT_JUMP_LAND, MARIO_ANIM_SINGLE_JUMP,
@@ -472,11 +470,9 @@ s32 act_double_jump(struct MarioState *m) {
     }
 
     // SMBZ-G
-    /*
     if (m->input & INPUT_Z_PRESSED) {
-        return set_mario_action(m, ACT_GROUND_POUND, 0);
+        return set_mario_action(m, ACT_CROUCH_AIR, 0);
     }
-    */
 
     play_mario_sound(m, SOUND_ACTION_TERRAIN_JUMP, SOUND_MARIO_HOOHOO);
     common_air_action_step(m, ACT_DOUBLE_JUMP_LAND, animation,
@@ -494,11 +490,9 @@ s32 act_triple_jump(struct MarioState *m) {
     }
 
     // SMBZ-G
-    /*
     if (m->input & INPUT_Z_PRESSED) {
-        return set_mario_action(m, ACT_GROUND_POUND, 0);
+        return set_mario_action(m, ACT_CROUCH_AIR, 0);
     }
-    */
 
 #ifndef VERSION_JP
     play_mario_sound(m, SOUND_ACTION_TERRAIN_JUMP, 0);
@@ -518,11 +512,9 @@ s32 act_triple_jump(struct MarioState *m) {
 
 s32 act_backflip(struct MarioState *m) {
     // SMBZ-G
-    /*
     if (m->input & INPUT_Z_PRESSED) {
-        return set_mario_action(m, ACT_GROUND_POUND, 0);
+        return set_mario_action(m, ACT_CROUCH_AIR, 0);
     }
-    */
 
     play_mario_sound(m, SOUND_ACTION_TERRAIN_JUMP, SOUND_MARIO_YAH_WAH_HOO);
     common_air_action_step(m, ACT_BACKFLIP_LAND, MARIO_ANIM_BACKFLIP, 0);
@@ -543,11 +535,9 @@ s32 act_freefall(struct MarioState *m) {
     }
 
     // SMBZ-G
-    /*
     if (m->input & INPUT_Z_PRESSED) {
-        return set_mario_action(m, ACT_GROUND_POUND, 0);
+        return set_mario_action(m, ACT_CROUCH_AIR, 0);
     }
-    */
 
     switch (m->actionArg) {
         case 0:
@@ -614,11 +604,9 @@ s32 act_side_flip(struct MarioState *m) {
     }
 
     // SMBZ-G
-    /*
     if (m->input & INPUT_Z_PRESSED) {
-        return set_mario_action(m, ACT_GROUND_POUND, 0);
+        return set_mario_action(m, ACT_CROUCH_AIR, 0);
     }
-    */
 
     play_mario_sound(m, SOUND_ACTION_TERRAIN_JUMP, 0);
 
@@ -640,11 +628,9 @@ s32 act_wall_kick_air(struct MarioState *m) {
     }
 
     // SMBZ-G
-    /*
     if (m->input & INPUT_Z_PRESSED) {
-        return set_mario_action(m, ACT_GROUND_POUND, 0);
+        return set_mario_action(m, ACT_CROUCH_AIR, 0);
     }
-    */
 
     play_mario_jump_sound(m);
     common_air_action_step(m, ACT_JUMP_LAND, MARIO_ANIM_SLIDEJUMP, AIR_STEP_CHECK_LEDGE_GRAB);
@@ -2042,11 +2028,9 @@ s32 act_special_triple_jump(struct MarioState *m) {
     }
 
     // SMBZ-G
-    /*
     if (m->input & INPUT_Z_PRESSED) {
-        return set_mario_action(m, ACT_GROUND_POUND, 0);
+        return set_mario_action(m, ACT_CROUCH_AIR, 0);
     }
-    */
 
     play_mario_sound(m, SOUND_ACTION_TERRAIN_JUMP, SOUND_MARIO_YAHOO);
 
@@ -2077,6 +2061,27 @@ s32 act_special_triple_jump(struct MarioState *m) {
 
     m->particleFlags |= PARTICLE_SPARKLES;
     return FALSE;
+}
+
+s32 act_crouch_air(struct MarioState *m)
+{
+	set_mario_animation(m, MARIO_ANIM_START_CROUCHING);
+
+	if (!(m->input & INPUT_Z_DOWN)) {
+		return set_mario_action(m, ACT_FREEFALL, 0);
+	}
+
+	if (m->input & INPUT_NONZERO_ANALOG) {
+		m->faceAngle[1] = m->intendedYaw;
+	}
+
+	switch (perform_air_step(m, 0)) {
+		case AIR_STEP_LANDED:
+			set_mario_action(m, ACT_CROUCH_SLIDE, 0);
+			break;
+	}
+
+	return FALSE;
 }
 
 s32 check_common_airborne_cancels(struct MarioState *m) {
@@ -2152,6 +2157,7 @@ s32 mario_execute_airborne_action(struct MarioState *m) {
         case ACT_RIDING_HOOT:          cancel = act_riding_hoot(m);          break;
         case ACT_TOP_OF_POLE_JUMP:     cancel = act_top_of_pole_jump(m);     break;
         case ACT_VERTICAL_WIND:        cancel = act_vertical_wind(m);        break;
+        case ACT_CROUCH_AIR:           cancel = act_crouch_air(m);           break;
     }
     /* clang-format on */
 
