@@ -1459,7 +1459,6 @@ public class Mario64Control : BaseCharacter
         {
             bool CanGuard =
                 sm64.marioState.action == (uint)ACT_START_CROUCHING ||
-                sm64.marioState.action == (uint)ACT_STOP_CROUCHING ||
                 sm64.marioState.action == (uint)ACT_CROUCHING ||
                 sm64.marioState.action == (uint)ACT_CROUCH_SLIDE ||
                 sm64.marioState.action == (uint)ACT_CROUCH_AIR;
