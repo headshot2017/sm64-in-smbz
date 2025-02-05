@@ -162,6 +162,7 @@ namespace SMBZ_64
                     (BaseCharacter.MovementRushStateENUM)typeof(BaseCharacter).GetField("MovementRushState", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(o.smbzChar.CharacterGO);
                 bool canRecover =
                     !o.smbzChar.CharacterGO.IsHurt &&
+                    !o.smbzChar.CharacterGO.IsInBlockStun &&
                     !o.smbzChar.CharacterGO.IsPursuing;
                 bool overrideSM64 =
                     !canRecover ||
