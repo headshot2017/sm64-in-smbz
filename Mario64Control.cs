@@ -504,7 +504,7 @@ public class Mario64Control : BaseCharacter
                 {
                     new CinematicEffect
                     {
-                        StartupDelay = 0.05f,
+                        StartupDelay = 0.02f,
                         PauseAndDimDuringStartup = false,
                         Duration = 0.75f,
                         PauseAndDimDuringDuration = true,
@@ -526,14 +526,19 @@ public class Mario64Control : BaseCharacter
             };
             bundle.OnUpdate = delegate
             {
-                if (sm64.marioState.animFrame == 35 && attackState == 0)
+                if (sm64.marioState.animFrame == 32 && attackState == 0)
                 {
-                    Interop.PlaySound(SM64Constants.SOUND_MARIO_GROUND_POUND_WAH);
                     attackState = 1;
+                    sm64.SetAnimFrame(36);
+                    sm64.SetActionTimer(37);
                 }
 
-                if (sm64.marioState.animFrame == 37)
+                if (sm64.marioState.animFrame == 37 && attackState == 1)
+                {
+                    attackState = 2;
+                    Interop.PlaySound(SM64Constants.SOUND_MARIO_GROUND_POUND_WAH);
                     base.HitBox_0.IsActive = true;
+                }
 
                 if (sm64.marioState.animFrame >= 48)
                     bundle.OnAnimationEnd();
