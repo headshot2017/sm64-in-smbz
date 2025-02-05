@@ -369,6 +369,9 @@ public class Mario64Control : BaseCharacter
                 {
                     attackState = 0;
                     sm64.SetAction(ACT_STAR_DANCE_EXIT, 1);
+                    sm64.SetAnim(MARIO_ANIM_STAR_DANCE);
+                    sm64.SetAnimFrame(3);
+                    sm64.SetActionTimer(4);
                     SetPlayerState(PlayerStateENUM.Attacking);
                     base.HitBox_0.IsActive = false;
                 },
