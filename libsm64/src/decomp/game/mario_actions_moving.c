@@ -1849,7 +1849,7 @@ s32 common_landing_cancels(struct MarioState *m, struct LandingAction *landingAc
     }
 
     // added for SMBZ-64
-    if (m->input & INPUT_Z_DOWN) {
+    if (m->input & INPUT_Z_PRESSED) {
         return set_mario_action(m, ACT_START_CROUCHING, 0);
     }
 
