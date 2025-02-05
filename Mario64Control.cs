@@ -1442,6 +1442,66 @@ public class Mario64Control : BaseCharacter
         Update_ReadAttackInput();
     }
 
+    protected override void Update_Blocking()
+    {
+        CharacterControl MyCharacterControl = (CharacterControl)GetField("MyCharacterControl");
+        AI_Bundle AI = (AI_Bundle)typeof(CharacterControl).GetField("AI", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(MyCharacterControl);
+
+        if (!MyCharacterControl.IsInputLocked && ((AI.GuardIdea?.IsActive ?? false) || (MyCharacterControl.Button_Guard?.IsHeld ?? false)))
+        {
+            bool CanGuard =
+                sm64.marioState.action == (uint)ACT_START_CROUCHING ||
+                sm64.marioState.action == (uint)ACT_STOP_CROUCHING ||
+                sm64.marioState.action == (uint)ACT_CROUCHING ||
+                sm64.marioState.action == (uint)ACT_CROUCH_SLIDE ||
+                sm64.marioState.action == (uint)ACT_CROUCH_AIR;
+
+            if (CanGuard && (IsIdle || IsGuarding))
+            {
+                SetPlayerState(PlayerStateENUM.Guarding);
+                bool flag = false;
+                bool flag2 = false;
+                if (AI.GuardIdea != null)
+                {
+                    flag = AI.GuardIdea.Direction < 0;
+                    flag2 = AI.GuardIdea.Direction > 0;
+                }
+
+                if (MyCharacterControl.Button_Left != null)
+                {
+                    flag = MyCharacterControl.Button_Left.IsHeld && !MyCharacterControl.Button_Right.IsHeld;
+                    flag2 = !MyCharacterControl.Button_Left.IsHeld && MyCharacterControl.Button_Right.IsHeld;
+                }
+
+                if (flag)
+                {
+                    SetField("IsFacingRight", false);
+                }
+                else if (flag2)
+                {
+                    SetField("IsFacingRight", true);
+                }
+
+                if (AI.GuardIdea != null && AI.GuardIdea.Duration > 0f)
+                {
+                    AI.GuardIdea.Duration -= BattleController.instance.DeltaTime;
+                }
+            }
+        }
+        else if (IsGuarding)
+        {
+            float BlockStun = (float)GetField("BlockStun");
+            if (BlockStun > 0f)
+            {
+                SetPlayerState(PlayerStateENUM.Guarding);
+            }
+            else
+            {
+                SetPlayerState(PlayerStateENUM.Idle);
+            }
+        }
+    }
+
     protected override void Update_Pursue()
     {
         FieldInfo PursueDataField = GetType().GetField("PursueData", BindingFlags.NonPublic | BindingFlags.Instance);
