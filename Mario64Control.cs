@@ -1887,7 +1887,7 @@ public class Mario64Control : BaseCharacter
 
     protected override void Perform_Aerial_DownAttack()
     {
-        if (sm64 == null) return;
+        if (sm64 == null || sm64.marioState.action == (uint)ACT_AERIAL_DOWN_ATTACK) return;
 
         sm64.SetAction(ACT_AERIAL_DOWN_ATTACK);
         PrepareAnAttack(AttBun_SmackDown);
