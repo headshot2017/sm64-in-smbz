@@ -186,6 +186,8 @@ namespace LibSM64
         public void SetAnimFrame(short frame)
         {
             Interop.MarioSetAnimFrame(marioId, frame);
+            for (int i = 0; i < states.Length; i++)
+                states[i].animFrame = frame;
         }
 
         public void SetCanRecover(bool canRecover)

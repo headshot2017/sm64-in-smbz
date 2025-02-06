@@ -372,6 +372,106 @@ public class Mario64Control : BaseCharacter
         }
     }
 
+    private AttackBundle AttBun_UpperPunch
+    {
+        get
+        {
+            AttackBundle atk = new AttackBundle
+            {
+                AnimationName = "UpperPunch",
+                OnAnimationStart = delegate
+                {
+                    SetPlayerState(PlayerStateENUM.Attacking);
+                    typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                        new HitBoxDamageParameters
+                        {
+                            Owner = this,
+                            Tag = base.tag,
+                            Damage = 1f,
+                            HitStun = 0.4f,
+                            Launch = new Vector2(2 * FaceDir, 14f),
+                            FreezeTime = 0.03f,
+                            Priority = BattleCache.PriorityType.Light,
+                            HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                            OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
+                        }
+                    );
+                    base.HitBox_0.transform.localPosition = new Vector2(0.35f, 0.45f);
+                    base.HitBox_0.transform.localScale = new Vector2(0.9f, 0.9f);
+                    base.HitBox_0.IsActive = false;
+                    sm64.SetAnimFrame(0);
+                },
+                OnAnimationEnd = delegate
+                {
+                    SetPlayerState(PlayerStateENUM.Idle);
+                    base.HitBox_0.IsActive = false;
+                    CurrentAttackData = null;
+                }
+            };
+            atk.OnUpdate = delegate
+            {
+                if (sm64.marioState.animID != (short)MARIO_ANIM_SINGLE_JUMP)
+                    return;
+
+                if (sm64.marioState.animFrame >= 5)
+                    atk.OnAnimationEnd();
+                if (sm64.marioState.animFrame >= 3)
+                    base.HitBox_0.IsActive = true;
+            };
+            return atk;
+        }
+    }
+
+    private AttackBundle AttBun_UpperPunchAir
+    {
+        get
+        {
+            AttackBundle atk = new AttackBundle
+            {
+                AnimationName = "UpperPunchAir",
+                OnAnimationStart = delegate
+                {
+                    SetPlayerState(PlayerStateENUM.Attacking);
+                    typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                        new HitBoxDamageParameters
+                        {
+                            Owner = this,
+                            Tag = base.tag,
+                            Damage = 2f,
+                            HitStun = 0.6f,
+                            Launch = new Vector2(4*FaceDir, 12f),
+                            FreezeTime = 0.03f,
+                            Priority = BattleCache.PriorityType.Light,
+                            HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                            OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
+                        }
+                    );
+                    base.HitBox_0.transform.localPosition = new Vector2(0.35f, 0.45f);
+                    base.HitBox_0.transform.localScale = new Vector2(0.9f, 0.9f);
+                    base.HitBox_0.IsActive = false;
+                    sm64.SetAnimFrame(0);
+                },
+                OnAnimationEnd = delegate
+                {
+                    SetPlayerState(PlayerStateENUM.Idle);
+                    base.HitBox_0.IsActive = false;
+                    CurrentAttackData = null;
+                }
+            };
+            atk.OnUpdate = delegate
+            {
+                if (sm64.marioState.animID != (short)MARIO_ANIM_SINGLE_JUMP)
+                    return;
+
+                if (sm64.marioState.animFrame >= 5)
+                    atk.OnAnimationEnd();
+                if (sm64.marioState.animFrame >= 3)
+                    base.HitBox_0.IsActive = true;
+            };
+            return atk;
+        }
+    }
+
     private AttackBundle AttBun_Twirl => new AttackBundle
     {
         AnimationName = "Twirl",
@@ -1883,6 +1983,22 @@ public class Mario64Control : BaseCharacter
         {
             PrepareAnAttack(AttBun_StarDancePunch);
         }
+    }
+
+    protected override void Perform_Grounded_UpAttack()
+    {
+        if (sm64 == null || sm64.marioState.action == (uint)ACT_UP_ATTACK) return;
+
+        sm64.SetAction(ACT_UP_ATTACK);
+        PrepareAnAttack(AttBun_UpperPunch);
+    }
+
+    protected override void Perform_Aerial_UpAttack()
+    {
+        if (sm64 == null || sm64.marioState.action == (uint)ACT_UP_ATTACK) return;
+
+        sm64.SetAction(ACT_UP_ATTACK);
+        PrepareAnAttack(AttBun_UpperPunchAir);
     }
 
     protected override void Perform_Aerial_DownAttack()
