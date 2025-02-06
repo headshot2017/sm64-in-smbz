@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Reflection;
 using SMBZG.CharacterSelect;
-using System.Runtime.CompilerServices;
 using SMBZG;
 
 [assembly: MelonInfo(typeof(SMBZ_64.Core), "SMBZ_64", "1.0.0", "Headshotnoby/headshot2017", null)]
