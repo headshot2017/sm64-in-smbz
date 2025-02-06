@@ -480,7 +480,7 @@ public class Mario64Control : BaseCharacter
             SetPlayerState(PlayerStateENUM.Attacking);
             base.HitBox_0.transform.localPosition = new Vector2(0f, 0f);
             base.HitBox_0.transform.localScale = new Vector2(1.25f, 0.6f);
-            base.HitBox_0.IsActive = true;
+            base.HitBox_0.IsActive = false;
         },
         OnUpdate = delegate
         {
