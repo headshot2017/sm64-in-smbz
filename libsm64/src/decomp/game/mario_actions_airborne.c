@@ -2086,6 +2086,39 @@ s32 act_crouch_air(struct MarioState *m)
 	return FALSE;
 }
 
+s32 act_aerial_down_attack(struct MarioState *m)
+{
+    s32 animFrame = set_mario_animation(m, MARIO_ANIM_HEAVY_THROW);
+    switch (animFrame)
+    {
+        case 0:
+            m->marioObj->header.gfx.animInfo.animFrame = 10;
+            break;
+
+        case 12:
+            play_sound_if_no_flag(m, SOUND_MARIO_WAH2, MARIO_MARIO_SOUND_PLAYED);
+            play_sound_if_no_flag(m, SOUND_ACTION_THROW, MARIO_ACTION_SOUND_PLAYED);
+            break;
+    }
+
+    if (!m->actionState)
+    {
+        switch (perform_air_step(m, 0))
+        {
+            case AIR_STEP_LANDED:
+                m->actionState = 1;
+                break;
+        }
+    }
+    else
+        stationary_ground_step(m);
+
+    if (animFrame >= 19)
+        return set_mario_action(m, ACT_FREEFALL, 0);
+
+    return FALSE;
+}
+
 s32 check_common_airborne_cancels(struct MarioState *m) {
     if (m->pos[1] < m->waterLevel - 100) {
         return set_water_plunge_action(m);
@@ -2160,6 +2193,7 @@ s32 mario_execute_airborne_action(struct MarioState *m) {
         case ACT_TOP_OF_POLE_JUMP:     cancel = act_top_of_pole_jump(m);     break;
         case ACT_VERTICAL_WIND:        cancel = act_vertical_wind(m);        break;
         case ACT_CROUCH_AIR:           cancel = act_crouch_air(m);           break;
+        case ACT_AERIAL_DOWN_ATTACK:   cancel = act_aerial_down_attack(m);   break;
     }
     /* clang-format on */
 

@@ -117,8 +117,12 @@ public class Mario64Control : BaseCharacter
             );
             base.HitBox_0.transform.localPosition = new Vector2(0, -0.3f);
             base.HitBox_0.transform.localScale = new Vector2(0.8f, 0.4f);
-            base.HitBox_0.IsActive = true;
+            base.HitBox_0.IsActive = false;
             Comp_InterplayerCollider.Disable();
+        },
+        OnUpdate = delegate
+        {
+            base.HitBox_0.IsActive = (sm64.marioState.velocity[1] < -50f);
         }
     };
 
@@ -321,6 +325,52 @@ public class Mario64Control : BaseCharacter
             base.HitBox_0.IsActive = true;
         }
     };
+
+    private AttackBundle AttBun_SmackDown
+    {
+        get
+        {
+            AttackBundle atk = new AttackBundle
+            {
+                AnimationName = "SmackDown",
+                OnAnimationStart = delegate
+                {
+                    SetPlayerState(PlayerStateENUM.Attacking);
+                    typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                        new HitBoxDamageParameters
+                        {
+                            Owner = this,
+                            Tag = base.tag,
+                            Damage = 1.5f,
+                            HitStun = 0.5f,
+                            Launch = new Vector2(6 * FaceDir, -10f),
+                            FreezeTime = 0.03f,
+                            Priority = BattleCache.PriorityType.Light,
+                            HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                            OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A,
+                        }
+                    );
+                    base.HitBox_0.transform.localPosition = new Vector2(0.7f, -0.3f);
+                    base.HitBox_0.transform.localScale = new Vector2(0.7f, 0.5f);
+                    base.HitBox_0.IsActive = false;
+                },
+                OnAnimationEnd = delegate
+                {
+                    SetPlayerState(PlayerStateENUM.Idle);
+                    base.HitBox_0.IsActive = false;
+                    CurrentAttackData = null;
+                }
+            };
+            atk.OnUpdate = delegate
+            {
+                if (sm64.marioState.animFrame >= 17)
+                    atk.OnAnimationEnd();
+                if (sm64.marioState.animFrame >= 12)
+                    base.HitBox_0.IsActive = true;
+            };
+            return atk;
+        }
+    }
 
     private AttackBundle AttBun_Twirl => new AttackBundle
     {
@@ -722,6 +772,8 @@ public class Mario64Control : BaseCharacter
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_SLIDE_KICK, 0), AttBun_SlideKick);
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_SLIDE_KICK_SLIDE, 0), AttBun_SlideKickSlide);
 
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_AERIAL_DOWN_ATTACK, 0), AttBun_SmackDown);
+
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_TWIRLING, 0), AttBun_Twirl);
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_TWIRLING, 1), AttBun_Twirl);
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_TWIRL_LAND, 0), AttBun_AttackEnd);
@@ -777,9 +829,6 @@ public class Mario64Control : BaseCharacter
         {
             Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control: {e}");
         }
-
-        if (sm64.marioState.action == (uint)ACT_GROUND_POUND)
-            base.HitBox_0.IsActive = (sm64.marioState.velocity[1] < -50f);
 
         if (sm64.marioState.action == (uint)ACT_CUSTOM_ANIM)
         {
@@ -1834,6 +1883,14 @@ public class Mario64Control : BaseCharacter
         {
             PrepareAnAttack(AttBun_StarDancePunch);
         }
+    }
+
+    protected override void Perform_Aerial_DownAttack()
+    {
+        if (sm64 == null) return;
+
+        sm64.SetAction(ACT_AERIAL_DOWN_ATTACK);
+        PrepareAnAttack(AttBun_SmackDown);
     }
 
     protected override void Perform_Aerial_NeutralSpecial()
