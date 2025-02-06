@@ -1493,6 +1493,7 @@ s32 act_crouch_slide(struct MarioState *m) {
         return set_mario_action(m, ACT_BUTT_SLIDE, 0);
     }
 
+    // SMBZ-64: ACT_CROUCH_AIR instead of ACT_FREEFALL
     if (m->input & INPUT_OFF_FLOOR) {
         return set_mario_action(m, ACT_CROUCH_AIR, 1);
     }
