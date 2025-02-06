@@ -9,7 +9,7 @@
             {
                 new CommandListRecordModel
                 {
-                    Title = "Punch Combo",
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.PunchCombo),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
@@ -20,9 +20,9 @@
                 },
                 new CommandListRecordModel
                 {
-                    Title = "Dive Attack",
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.DiveAttack),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
-                    AdditionalInfo = "When moving fast, Mario will dive instead of punching",
+                    AdditionalInfo = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.WhenMovingFastPunch),
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
                         CommandImageDisplayEnum.Attack
@@ -51,7 +51,7 @@
                 },
                 new CommandListRecordModel
                 {
-                    Title = "Air Kick",
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.AirKick),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileInAir),
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
@@ -60,9 +60,9 @@
                 },
                 new CommandListRecordModel
                 {
-                    Title = "Air Dive",
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.AirDive),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileInAir),
-                    AdditionalInfo = "When moving fast, Mario will dive instead of kicking",
+                    AdditionalInfo = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.WhenMovingFastKick),
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
                         CommandImageDisplayEnum.Attack
@@ -80,7 +80,7 @@
                 },
                 new CommandListRecordModel
                 {
-                    Title = "Breakdance",
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.Breakdance),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
                     FeatureImageList = new List<CommandImageDisplayEnum>
                     {
@@ -94,9 +94,9 @@
                 },
                 new CommandListRecordModel
                 {
-                    Title = "Slide Kick",
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.SlideKick),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
-                    AdditionalInfo = "While moving",
+                    AdditionalInfo = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.WhileMoving),
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
                         CommandImageDisplayEnum.Defend,
@@ -105,7 +105,7 @@
                 },
                 new CommandListRecordModel
                 {
-                    Title = "Twirl",
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.Twirl),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileInAir),
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
@@ -115,7 +115,7 @@
                 },
                 new CommandListRecordModel
                 {
-                    Title = "Ground Pound",
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.GroundPound),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileInAir),
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
@@ -126,7 +126,7 @@
                 },
                 new CommandListRecordModel
                 {
-                    Title = "Punch Spin",
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.PunchSpin),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
                     FeatureImageList = new List<CommandImageDisplayEnum>
                     {
