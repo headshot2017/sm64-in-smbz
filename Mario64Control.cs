@@ -706,13 +706,14 @@ public class Mario64Control : BaseCharacter
                     SetPlayerState(PlayerStateENUM.Cinematic_NoInput);
                     CancelAndRefundPursue();
                     SetField("IsIntangible", true);
-                    if (SaveData.Data.MovementRush_IsEnabled_ViaCriticalStrikes)
+                    //if (SaveData.Data.MovementRush_IsEnabled_ViaCriticalStrikes)
                     {
                         MovementRushManager MRManager = (MovementRushManager)typeof(BattleController).GetField("MovementRushManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
                         CharacterControl targetControl = (CharacterControl)GetType().GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(target);
 
                         MRManager.StartNewMovementRush((bool)GetField("IsFacingRight"), new List<CharacterControl> { MyCharacterControl }, new List<CharacterControl> { targetControl });
                     }
+                    /*
                     else
                     {
                         BattleCameraManager CamManager = (BattleCameraManager)typeof(BattleController).GetField("CameraManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
@@ -728,6 +729,7 @@ public class Mario64Control : BaseCharacter
                             Comp_Animator.Play("Rush_Startup", -1, 0f);
                         }));
                     }
+                    */
                 }
             };
             bundle.IsCinematicsQueued = true;

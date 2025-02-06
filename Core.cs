@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Reflection;
 using SMBZG.CharacterSelect;
+using System.Runtime.CompilerServices;
+using SMBZG;
 
 [assembly: MelonInfo(typeof(SMBZ_64.Core), "SMBZ_64", "1.0.0", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
@@ -312,6 +314,26 @@ namespace SMBZ_64
                 }
 
                 return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(BattleController), "Pause_OnClick_CommandList", new Type[] { typeof(int) })]
+        private static class CommandListPatch
+        {
+            private static bool Prefix(BattleController __instance, int PlayerIndex)
+            {
+                CharacterControl Player1 = (CharacterControl)typeof(BattleController).GetField("Player1", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                CharacterControl Player2 = (CharacterControl)typeof(BattleController).GetField("Player2", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                PlayerBattleDataModel PlayerModel = ((PlayerIndex == 2) ? Player2 : Player1).PlayerDataReference;
+                if (PlayerModel.CurrentCharacterData != Mario64Data)
+                    return true;
+
+                __instance.PauseMenuPanel_CommandList.gameObject.SetActive(true);
+                __instance.PauseMenuPanel_CommandList.Button_Close.Select();
+                CommandListModel characterCommandListData = CommandListDataExt.Mario64();
+                __instance.PauseMenuPanel_CommandList.Load(characterCommandListData);
+
+                return false;
             }
         }
     }
