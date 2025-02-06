@@ -1868,7 +1868,7 @@ public class Mario64Control : BaseCharacter
         }
         else
         {
-            if (action != ACT_CUSTOM_ANIM && action != ACT_CUSTOM_ANIM_TO_ACTION)
+            if (action != ACT_STAR_DANCE_EXIT && action != ACT_CUSTOM_ANIM && action != ACT_CUSTOM_ANIM_TO_ACTION)
             {
                 if (!IsPursuing)
                     SetPlayerState(PlayerStateENUM.Idle);
