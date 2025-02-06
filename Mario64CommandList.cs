@@ -42,7 +42,7 @@
                 */
                 new CommandListRecordModel
                 {
-                    Title = "Upper Punch",
+                    Title = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.Uppercut),
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
                         CommandImageDisplayEnum.Up,
