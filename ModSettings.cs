@@ -7,13 +7,10 @@ public static class ModSettings
     {
         public Player(PlayerID PlayerID)
         {
-            this.PlayerID = PlayerID;
             playerCategory = MelonPreferences.CreateCategory($"Player{PlayerID}Preferences");
             playerCategory.SetFilePath("UserData/SMBZ_64.cfg");
             Mario_SM64_IsEnabled = playerCategory.CreateEntry<bool>("Mario_SM64_IsEnabled", false);
         }
-
-        private PlayerID PlayerID;
 
         public MelonPreferences_Category playerCategory;
         public MelonPreferences_Entry<bool> Mario_SM64_IsEnabled;
