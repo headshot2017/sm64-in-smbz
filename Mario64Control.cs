@@ -543,7 +543,7 @@ public class Mario64Control : BaseCharacter
                         {
                             Owner = this,
                             Tag = base.tag,
-                            Damage = 1f,
+                            Damage = 2f,
                             HitStun = 1.2f,
                             Launch = Vector2.zero,
                             FreezeTime = 0.05f,
@@ -564,7 +564,7 @@ public class Mario64Control : BaseCharacter
                         {
                             Owner = this,
                             Tag = base.tag,
-                            Damage = 1f,
+                            Damage = 2f,
                             HitStun = 1.2f,
                             Launch = Vector2.zero,
                             FreezeTime = 0.05f,
