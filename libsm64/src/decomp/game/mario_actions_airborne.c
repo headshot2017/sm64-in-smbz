@@ -535,7 +535,7 @@ s32 act_freefall(struct MarioState *m) {
     }
 
     // SMBZ-G
-    if (m->input & INPUT_Z_PRESSED) {
+    if (m->input & INPUT_Z_DOWN) {
         return set_mario_action(m, ACT_CROUCH_AIR, 0);
     }
 
