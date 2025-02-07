@@ -2001,7 +2001,8 @@ public class Mario64Control : BaseCharacter
     {
         if (sm64 == null) return;
 
-        if (sm64.marioState.forwardVel >= 10f)
+        CharacterControl MyCharacterControl = (CharacterControl)GetField("MyCharacterControl");
+        if (MyCharacterControl.Button_Left.IsHeld || MyCharacterControl.Button_Right.IsHeld)
         {
             sm64.SetAction(ACT_SLIDE_KICK);
             PrepareAnAttack(AttBun_SlideKick);
