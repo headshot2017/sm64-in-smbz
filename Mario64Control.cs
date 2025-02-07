@@ -876,6 +876,7 @@ public class Mario64Control : BaseCharacter
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_SLIDE_KICK_SLIDE, 0), AttBun_SlideKickSlide);
 
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_AERIAL_DOWN_ATTACK, 0), AttBun_SmackDown);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_UP_ATTACK, 1), AttBun_UpperPunch);
 
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_TWIRLING, 0), AttBun_Twirl);
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_TWIRLING, 1), AttBun_Twirl);
