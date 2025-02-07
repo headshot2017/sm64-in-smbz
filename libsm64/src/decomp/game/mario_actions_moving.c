@@ -1507,6 +1507,8 @@ s32 act_crouch_slide(struct MarioState *m) {
         }
     }
 
+    // SMBZ-64: ignore this
+    /*
     if (m->input & INPUT_B_PRESSED) {
         if (m->forwardVel >= 10.0f) {
             return set_mario_action(m, ACT_SLIDE_KICK, 0);
@@ -1514,6 +1516,7 @@ s32 act_crouch_slide(struct MarioState *m) {
             return set_mario_action(m, ACT_MOVE_PUNCHING, 0x0009);
         }
     }
+    */
 
     if (m->input & INPUT_A_PRESSED) {
         return set_jumping_action(m, ACT_JUMP, 0);

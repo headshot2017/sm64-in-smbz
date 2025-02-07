@@ -8,6 +8,7 @@ using static SM64Constants.MarioAnimID;
 using ActionKeyPair = System.Collections.Generic.KeyValuePair<SM64Constants.Action, uint>;
 using AnimKeyPair = System.Collections.Generic.KeyValuePair<SM64Constants.MarioAnimID, short>;
 using SMBZG;
+using MyBox;
 
 public class Mario64Control : BaseCharacter
 {
@@ -1993,6 +1994,20 @@ public class Mario64Control : BaseCharacter
 
         sm64.SetAction(ACT_UP_ATTACK);
         PrepareAnAttack(AttBun_UpperPunch);
+    }
+
+    protected override void Perform_Grounded_DownAttack()
+    {
+        if (sm64 == null) return;
+
+        if (sm64.marioState.forwardVel >= 10f)
+        {
+            sm64.SetAction(ACT_SLIDE_KICK);
+            PrepareAnAttack(AttBun_SlideKick);
+            return;
+        }
+
+        sm64.SetAction(ACT_PUNCHING, 9);
     }
 
     protected override void Perform_Aerial_UpAttack()

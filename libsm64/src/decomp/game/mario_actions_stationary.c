@@ -563,9 +563,12 @@ s32 act_crouching(struct MarioState *m) {
         m->faceAngle[1] = m->intendedYaw;
     }
 
+    // SMBZ-64: ignore this
+    /*
     if (m->input & INPUT_B_PRESSED) {
         return set_mario_action(m, ACT_PUNCHING, 9);
     }
+    */
 
     stationary_ground_step(m);
     set_mario_animation(m, MARIO_ANIM_CROUCHING);

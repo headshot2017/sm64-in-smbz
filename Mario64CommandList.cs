@@ -28,18 +28,31 @@
                         CommandImageDisplayEnum.Attack
                     }
                 },
-                /*
                 new CommandListRecordModel
                 {
-                    Title = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.HookPunch),
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.Breakdance),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
+                    FeatureImageList = new List<CommandImageDisplayEnum>
+                    {
+                        CommandImageDisplayEnum.GuardBreaker
+                    },
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
                         CommandImageDisplayEnum.Down,
                         CommandImageDisplayEnum.Attack
                     }
                 },
-                */
+                new CommandListRecordModel
+                {
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.SlideKick),
+                    Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
+                    AdditionalInfo = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.WhileMoving),
+                    CommandImageList = new List<CommandImageDisplayEnum>
+                    {
+                        CommandImageDisplayEnum.Down,
+                        CommandImageDisplayEnum.Attack
+                    }
+                },
                 new CommandListRecordModel
                 {
                     Title = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.Uppercut),
@@ -80,26 +93,16 @@
                 },
                 new CommandListRecordModel
                 {
-                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.Breakdance),
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.PunchSpin),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
                     FeatureImageList = new List<CommandImageDisplayEnum>
                     {
-                        CommandImageDisplayEnum.GuardBreaker
+                        CommandImageDisplayEnum.CriticalStrike
                     },
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
-                        CommandImageDisplayEnum.Defend,
-                        CommandImageDisplayEnum.Attack
-                    }
-                },
-                new CommandListRecordModel
-                {
-                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.SlideKick),
-                    Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
-                    AdditionalInfo = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.WhileMoving),
-                    CommandImageList = new List<CommandImageDisplayEnum>
-                    {
-                        CommandImageDisplayEnum.Defend,
+                        CommandImageDisplayEnum.Down,
+                        CommandImageDisplayEnum.ZTrigger,
                         CommandImageDisplayEnum.Attack
                     }
                 },
@@ -117,21 +120,6 @@
                 {
                     Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.GroundPound),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileInAir),
-                    CommandImageList = new List<CommandImageDisplayEnum>
-                    {
-                        CommandImageDisplayEnum.Down,
-                        CommandImageDisplayEnum.ZTrigger,
-                        CommandImageDisplayEnum.Attack
-                    }
-                },
-                new CommandListRecordModel
-                {
-                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.PunchSpin),
-                    Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
-                    FeatureImageList = new List<CommandImageDisplayEnum>
-                    {
-                        CommandImageDisplayEnum.CriticalStrike
-                    },
                     CommandImageList = new List<CommandImageDisplayEnum>
                     {
                         CommandImageDisplayEnum.Down,
