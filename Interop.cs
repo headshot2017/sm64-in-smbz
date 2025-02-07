@@ -282,14 +282,14 @@ namespace LibSM64
 
         public static void GlobalInit( byte[] rom )
         {
-            var debugDelegate = new DebugPrintFuncDelegate( debugPrintCallback );
+            //var debugDelegate = new DebugPrintFuncDelegate( debugPrintCallback );
             var romHandle = GCHandle.Alloc( rom, GCHandleType.Pinned );
             var textureData = new byte[ 4 * SM64_TEXTURE_WIDTH * SM64_TEXTURE_HEIGHT ];
             var textureDataHandle = GCHandle.Alloc( textureData, GCHandleType.Pinned );
 
             sm64_global_init( romHandle.AddrOfPinnedObject(), textureDataHandle.AddrOfPinnedObject());
             sm64_audio_init( romHandle.AddrOfPinnedObject() );
-            sm64_register_debug_print_function(Marshal.GetFunctionPointerForDelegate(debugDelegate));
+            //sm64_register_debug_print_function(Marshal.GetFunctionPointerForDelegate(debugDelegate));
 
             Color32[] cols = new Color32[ SM64_TEXTURE_WIDTH * SM64_TEXTURE_HEIGHT ];
             defaultTexture = new Texture2D( SM64_TEXTURE_WIDTH, SM64_TEXTURE_HEIGHT );
