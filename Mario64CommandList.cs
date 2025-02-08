@@ -93,6 +93,16 @@
                 },
                 new CommandListRecordModel
                 {
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.GroundTwirl),
+                    Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
+                    CommandImageList = new List<CommandImageDisplayEnum>
+                    {
+                        CommandImageDisplayEnum.ZTrigger,
+                        CommandImageDisplayEnum.Attack
+                    }
+                },
+                new CommandListRecordModel
+                {
                     Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.PunchSpin),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileOnGround),
                     FeatureImageList = new List<CommandImageDisplayEnum>

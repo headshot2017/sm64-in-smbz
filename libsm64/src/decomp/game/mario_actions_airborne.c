@@ -2121,11 +2121,11 @@ s32 act_aerial_down_attack(struct MarioState *m)
 
 s32 act_up_attack(struct MarioState *m)
 {
-    if (!m->actionArg)
+    if (!m->actionTimer)
     {
         if (m->marioObj->header.gfx.animInfo.animID == MARIO_ANIM_SINGLE_JUMP)
             m->marioObj->header.gfx.animInfo.animFrame = 0;
-        m->actionArg = 1;
+        m->actionTimer = 1;
     }
 
     s32 animFrame = set_mario_animation(m, MARIO_ANIM_SINGLE_JUMP);

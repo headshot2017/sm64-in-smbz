@@ -2025,6 +2025,36 @@ s32 act_hold_quicksand_jump_land(struct MarioState *m) {
     return cancel;
 }
 
+s32 act_heavy_attack(struct MarioState *m)
+{
+	if (!m->actionState)
+	{
+		m->twirlYaw = 0;
+		m->actionState++;
+	}
+
+	s16 startTwirlYaw = m->twirlYaw;
+   	s16 yawVelTarget = 0x3000 - m->actionTimer*0x0300;
+	mario_set_forward_vel(m, (int)(yawVelTarget) * 100 / 0x8000);
+
+	m->angleVel[1] = yawVelTarget;
+	m->twirlYaw += m->angleVel[1];
+        m->actionTimer++;
+
+	set_mario_animation(m, MARIO_ANIM_TWIRL);
+
+	if (startTwirlYaw > m->twirlYaw)
+		play_sound(SOUND_ACTION_TWIRL, m->marioObj->header.gfx.cameraToObject);
+
+	perform_ground_step(m);
+
+	m->marioObj->header.gfx.angle[1] += m->twirlYaw;
+
+        if (!yawVelTarget)
+            return set_mario_action(m, ACT_IDLE, 0);
+	return FALSE;
+}
+
 s32 check_common_moving_cancels(struct MarioState *m) {
     if (m->pos[1] < m->waterLevel - 100) {
         return set_water_plunge_action(m);
@@ -2098,6 +2128,7 @@ s32 mario_execute_moving_action(struct MarioState *m) {
         case ACT_QUICKSAND_JUMP_LAND:      cancel = act_quicksand_jump_land(m);      break;
         case ACT_HOLD_QUICKSAND_JUMP_LAND: cancel = act_hold_quicksand_jump_land(m); break;
         case ACT_LONG_JUMP_LAND:           cancel = act_long_jump_land(m);           break;
+        case ACT_HEAVY_ATTACK:             cancel = act_heavy_attack(m);             break;
     }
     /* clang-format on */
 

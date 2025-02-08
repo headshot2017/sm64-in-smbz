@@ -911,6 +911,7 @@ public static class SM64Constants
         ACT_TRIPLE_JUMP_LAND =            0x04000478, // (0x078 | ACT_FLAG_MOVING | ACT_FLAG_ALLOW_FIRST_PERSON)
         ACT_LONG_JUMP_LAND =              0x00000479, // (0x079 | ACT_FLAG_MOVING)
         ACT_BACKFLIP_LAND =               0x0400047A, // (0x07A | ACT_FLAG_MOVING | ACT_FLAG_ALLOW_FIRST_PERSON)
+        ACT_HEAVY_ATTACK =                0x1080047B, // (0x07B | ACT_FLAG_MOVING | ACT_FLAG_ATTACKING | ACT_FLAG_SWIMMING_OR_FLYING) (custom SMBZ_64 SMBZ-G action)
 
         // group 0x080: airborne actions
         ACT_JUMP =                        0x03000880, // (0x080 | ACT_FLAG_AIR | ACT_FLAG_ALLOW_VERTICAL_WIND_ACTION | ACT_FLAG_CONTROL_JUMP_HEIGHT)
