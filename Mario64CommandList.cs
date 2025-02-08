@@ -137,6 +137,27 @@
                         CommandImageDisplayEnum.Attack
                     }
                 },
+                new CommandListRecordModel
+                {
+                    Title = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.SwiftGutPunch),
+                    Subtitle = $"{LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.RequiresOneBar)}. {LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.Chargeable)}.",
+                    CommandImageList = new List<CommandImageDisplayEnum>
+                    {
+                        CommandImageDisplayEnum.ZTrigger,
+                        CommandImageDisplayEnum.Jump
+                    }
+                },
+                new CommandListRecordModel
+                {
+                    Title = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.SuperGutPunch),
+                    Subtitle = $"{LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.RequiresOneBar)}. {LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.SuperGutPunch_Subtitle)}.",
+                    FeatureImageList = new List<CommandImageDisplayEnum> { CommandImageDisplayEnum.GuardBreaker },
+                    CommandImageList = new List<CommandImageDisplayEnum>
+                    {
+                        CommandImageDisplayEnum.ZTrigger,
+                        CommandImageDisplayEnum.Jump
+                    }
+                },
             }
         };
     }
