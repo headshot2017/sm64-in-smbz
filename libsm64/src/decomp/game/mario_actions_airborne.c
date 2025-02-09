@@ -2121,37 +2121,83 @@ s32 act_aerial_down_attack(struct MarioState *m)
 
 s32 act_up_attack(struct MarioState *m)
 {
-    if (!m->actionTimer)
-    {
-        if (m->marioObj->header.gfx.animInfo.animID == MARIO_ANIM_SINGLE_JUMP)
-            m->marioObj->header.gfx.animInfo.animFrame = 0;
-        m->actionTimer = 1;
-    }
+	if (!m->actionTimer)
+	{
+		if (m->marioObj->header.gfx.animInfo.animID == MARIO_ANIM_SINGLE_JUMP)
+			m->marioObj->header.gfx.animInfo.animFrame = 0;
+		m->actionTimer = 1;
+	}
 
-    s32 animFrame = set_mario_animation(m, MARIO_ANIM_SINGLE_JUMP);
-    switch (animFrame)
-    {
-        case 0:
-            play_sound_if_no_flag(m, SOUND_ACTION_THROW, MARIO_ACTION_SOUND_PLAYED);
-            break;
-    }
+	s32 animFrame = set_mario_animation(m, MARIO_ANIM_SINGLE_JUMP);
+	switch (animFrame)
+	{
+		case 0:
+			play_sound_if_no_flag(m, SOUND_ACTION_THROW, MARIO_ACTION_SOUND_PLAYED);
+			break;
+	}
 
-    if (!m->actionState)
-    {
-        switch (perform_air_step(m, 0))
-        {
-            case AIR_STEP_LANDED:
-                m->actionState = 1;
-                break;
-        }
-    }
-    else
-        stationary_ground_step(m);
+	if (!m->actionState)
+	{
+		switch (perform_air_step(m, 0))
+		{
+            		case AIR_STEP_LANDED:
+				m->actionState = 1;
+				break;
+		}
+	}
+	else
+		stationary_ground_step(m);
 
-    if (animFrame >= 8)
-        return set_mario_action(m, (m->actionState) ? ACT_IDLE : ACT_FREEFALL, 0);
+	if (animFrame >= 8)
+		return set_mario_action(m, (m->actionState) ? ACT_IDLE : ACT_FREEFALL, 0);
 
-    return FALSE;
+	return FALSE;
+}
+
+s32 act_heavy_up_attack(struct MarioState *m)
+{
+	if (!m->actionState)
+	{
+		if (m->marioObj->header.gfx.animInfo.animID == MARIO_ANIM_SINGLE_JUMP)
+			m->marioObj->header.gfx.animInfo.animFrame = 0;
+		m->twirlYaw = 0;
+		m->actionState = 1;
+	}
+
+	set_mario_animation(m, MARIO_ANIM_SINGLE_JUMP);
+	play_sound_if_no_flag(m, SOUND_ACTION_THROW, MARIO_MARIO_SOUND_PLAYED);
+
+	s16 yawVelTarget = 0x1000 - m->actionTimer*0x0080;
+	if (yawVelTarget <= 0)
+		yawVelTarget = 0;
+
+	perform_air_step(m, 0);
+
+	switch (m->actionState)
+	{
+		case 1:
+			if (++m->actionTimer > 5)
+			{
+				m->actionState++;
+				m->vel[1] = 45;
+				m->actionTimer = 0;
+			}
+			break;
+
+		case 2:
+			m->actionTimer++;
+
+			m->angleVel[1] = yawVelTarget;
+			m->twirlYaw += m->angleVel[1];
+			m->marioObj->header.gfx.angle[1] += m->twirlYaw;
+
+			mario_set_forward_vel(m, 10);
+			if (m->vel[1] <= -30)
+				return set_mario_action(m, ACT_FREEFALL, 0);
+			break;
+	}
+
+	return FALSE;
 }
 
 s32 check_common_airborne_cancels(struct MarioState *m) {
@@ -2230,6 +2276,7 @@ s32 mario_execute_airborne_action(struct MarioState *m) {
         case ACT_CROUCH_AIR:           cancel = act_crouch_air(m);           break;
         case ACT_AERIAL_DOWN_ATTACK:   cancel = act_aerial_down_attack(m);   break;
         case ACT_UP_ATTACK:            cancel = act_up_attack(m);            break;
+        case ACT_HEAVY_UP_ATTACK:      cancel = act_heavy_up_attack(m);      break;
     }
     /* clang-format on */
 

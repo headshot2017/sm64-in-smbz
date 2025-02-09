@@ -301,6 +301,7 @@
 #define ACT_THROWN_BACKWARD            0x010208BE // (0x0BE | ACT_FLAG_AIR | ACT_FLAG_INVULNERABLE | ACT_FLAG_ALLOW_VERTICAL_WIND_ACTION)
 #define ACT_AERIAL_DOWN_ATTACK         0x0080088F // (0x08F | ACT_FLAG_AIR | ACT_FLAG_ATTACKING) (custom SMBZ_64 SMBZ-G action)
 #define ACT_UP_ATTACK                  0x00800090 // (0x090 | ACT_FLAG_ATTACKING) (custom SMBZ_64 SMBZ-G action)
+#define ACT_HEAVY_UP_ATTACK            0x00800091 // (0x091 | ACT_FLAG_ATTACKING) (custom SMBZ_64 SMBZ-G action)
 #define ACT_CROUCH_AIR                 0x000088BF // (0x0BF | ACT_FLAG_AIR | ACT_FLAG_SHORT_HITBOX) (custom SMBZ_64 SMBZ-G action)
 
 // group 0x0C0: submerged actions

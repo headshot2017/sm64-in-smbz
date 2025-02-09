@@ -128,6 +128,16 @@
                 },
                 new CommandListRecordModel
                 {
+                    Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.SuperUppercut),
+                    CommandImageList = new List<CommandImageDisplayEnum>
+                    {
+                        CommandImageDisplayEnum.Up,
+                        CommandImageDisplayEnum.ZTrigger,
+                        CommandImageDisplayEnum.Attack
+                    }
+                },
+                new CommandListRecordModel
+                {
                     Title = LocalizationExt.Fetch(LocalizationExt.ResourceKeyExtENUM.GroundPound),
                     Subtitle = LocalizationResource.Fetch(LocalizationResource.ResourceKeyENUM.WhileInAir),
                     CommandImageList = new List<CommandImageDisplayEnum>

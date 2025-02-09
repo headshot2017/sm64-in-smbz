@@ -8,6 +8,7 @@ using static SM64Constants.MarioAnimID;
 using ActionKeyPair = System.Collections.Generic.KeyValuePair<SM64Constants.Action, uint>;
 using AnimKeyPair = System.Collections.Generic.KeyValuePair<SM64Constants.MarioAnimID, short>;
 using SMBZG;
+using static UnityEngine.UI.GridLayoutGroup;
 
 public class Mario64Control : BaseCharacter
 {
@@ -422,6 +423,7 @@ public class Mario64Control : BaseCharacter
         }
     }
 
+
     private AttackBundle AttBun_UpperPunchAir
     {
         get
@@ -558,20 +560,7 @@ public class Mario64Control : BaseCharacter
                 }
                 else if (sm64.marioState.animFrame == 15 && attackState == 1)
                 {
-                    typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
-                        new HitBoxDamageParameters
-                        {
-                            Owner = this,
-                            Tag = base.tag,
-                            Damage = 2f,
-                            HitStun = 1.2f,
-                            Launch = Vector2.zero,
-                            FreezeTime = 0.05f,
-                            Priority = BattleCache.PriorityType.Medium,
-                            HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
-                            OnHitSoundEffect = SoundCache.ins.Battle_Hit_1A
-                        }
-                    );
+                    base.HitBox_0.ReinitializeID();
                     base.HitBox_0.IsActive = true;
                     attackState = 2;
                 }
@@ -792,6 +781,73 @@ public class Mario64Control : BaseCharacter
         }
     }
 
+    private AttackBundle AttBun_SuperUppercut
+    {
+        get
+        {
+            AttackBundle atk = new AttackBundle
+            {
+                AnimationName = "SuperUppercut",
+                OnAnimationStart = delegate
+                {
+                    SetPlayerState(PlayerStateENUM.Attacking);
+                    typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
+                        new HitBoxDamageParameters
+                        {
+                            Owner = this,
+                            Tag = base.tag,
+                            Damage = 5f / 6f,
+                            HitStun = 0.65f,
+                            Launch = new Vector2(3f * FaceDir, 12f),
+                            FreezeTime = 0.03f,
+                            Priority = BattleCache.PriorityType.Light,
+                            HitSpark = new EffectSprite.Parameters(EffectSprite.Sprites.HitsparkBlunt),
+                            OnHitSoundEffect = SoundCache.ins.Battle_Hit_2A
+                        }
+                    );
+                    base.HitBox_0.transform.localPosition = new Vector2(0.35f, 0.45f);
+                    base.HitBox_0.transform.localScale = new Vector2(0.9f, 0.9f);
+                    base.HitBox_0.IsActive = false;
+                    Comp_InterplayerCollider.Disable();
+                    attackState = 0;
+                    attackTimer = 0;
+                },
+                OnAnimationEnd = delegate
+                {
+                    SetPlayerState(PlayerStateENUM.Idle);
+                    base.HitBox_0.IsActive = false;
+                    CurrentAttackData = null;
+                    Comp_InterplayerCollider.Enable();
+                    Melon<SMBZ_64.Core>.Logger.Msg("ended");
+                },
+                OnInterrupt = delegate
+                {
+                    base.HitBox_0.IsActive = false;
+                    Comp_InterplayerCollider.Enable();
+                }
+            };
+            atk.OnFixedUpdate = delegate
+            {
+                if (sm64.marioState.actionState != 2)
+                    return;
+                else if (sm64.marioState.velocity[1] <= -28)
+                {
+                    atk.OnAnimationEnd();
+                    return;
+                }
+
+                base.HitBox_0.IsActive = true;
+                attackTimer += Time.fixedDeltaTime;
+                if (attackTimer > 0.08f && attackState++ < 5)
+                {
+                    attackTimer = 0;
+                    base.HitBox_0.ReinitializeID();
+                }
+            };
+            return atk;
+        }
+    }
+
     private AttackBundle AttBun_AttackEnd => new AttackBundle
     {
         AnimationName = "AttackEnd",
@@ -808,6 +864,7 @@ public class Mario64Control : BaseCharacter
     private Animator Comp_Animator;
     private Rigidbody2D Comp_Rigidbody2D;
     public float movRushTimer;
+    public float attackTimer;
     public int attackState;
 
     protected override void Awake()
@@ -933,6 +990,7 @@ public class Mario64Control : BaseCharacter
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_UP_ATTACK, 0), AttBun_UpperPunch);
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_UP_ATTACK, 1), AttBun_UpperPunchAir);
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_HEAVY_ATTACK, 0), AttBun_GroundTwirl);
+        SM64AttacksActionArg.Add(new ActionKeyPair(ACT_HEAVY_UP_ATTACK, 0), AttBun_SuperUppercut);
 
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_TWIRLING, 0), AttBun_Twirl);
         SM64AttacksActionArg.Add(new ActionKeyPair(ACT_TWIRLING, 1), AttBun_Twirl);
@@ -2030,21 +2088,6 @@ public class Mario64Control : BaseCharacter
         Perform_PeaceSignTaunt();
     }
 
-    protected override void Perform_Grounded_DownSpecial()
-    {
-        CharacterControl MyCharacterControl = (CharacterControl)GetField("MyCharacterControl");
-        IntensityDataStore Intensity = (IntensityDataStore)typeof(BattleController).GetField("Intensity", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(BattleController.instance);
-        if (Intensity.IsCriticalHitReady(MyCharacterControl.PlayerDataReference.PlayerIndex))
-        {
-            Intensity.UseCriticalStrike(MyCharacterControl.PlayerDataReference.PlayerIndex);
-            PrepareAnAttack(AttBun_CriticalPunch);
-        }
-        else
-        {
-            PrepareAnAttack(AttBun_StarDancePunch);
-        }
-    }
-
     protected override void Perform_Grounded_UpAttack()
     {
         if (sm64 == null || sm64.marioState.action == (uint)ACT_UP_ATTACK) return;
@@ -2076,6 +2119,29 @@ public class Mario64Control : BaseCharacter
         PrepareAnAttack(AttBun_GroundTwirl);
     }
 
+    protected override void Perform_Grounded_UpSpecial()
+    {
+        if (sm64 == null) return;
+
+        sm64.SetAction(ACT_HEAVY_UP_ATTACK);
+        PrepareAnAttack(AttBun_SuperUppercut);
+    }
+
+    protected override void Perform_Grounded_DownSpecial()
+    {
+        CharacterControl MyCharacterControl = (CharacterControl)GetField("MyCharacterControl");
+        IntensityDataStore Intensity = (IntensityDataStore)typeof(BattleController).GetField("Intensity", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(BattleController.instance);
+        if (Intensity.IsCriticalHitReady(MyCharacterControl.PlayerDataReference.PlayerIndex))
+        {
+            Intensity.UseCriticalStrike(MyCharacterControl.PlayerDataReference.PlayerIndex);
+            PrepareAnAttack(AttBun_CriticalPunch);
+        }
+        else
+        {
+            PrepareAnAttack(AttBun_StarDancePunch);
+        }
+    }
+
     protected override void Perform_Aerial_UpAttack()
     {
         if (sm64 == null || sm64.marioState.action == (uint)ACT_UP_ATTACK) return;
@@ -2100,6 +2166,15 @@ public class Mario64Control : BaseCharacter
         if (sm64.marioState.velocity[1] < 0)
             sm64.SetVelocity(new Vector3(sm64.marioState.velocity[0], 30, 0));
         PrepareAnAttack(AttBun_Twirl);
+    }
+
+
+    protected override void Perform_Aerial_UpSpecial()
+    {
+        if (sm64 == null) return;
+
+        sm64.SetAction(ACT_HEAVY_UP_ATTACK);
+        PrepareAnAttack(AttBun_SuperUppercut);
     }
 
     protected override void Perform_Aerial_DownSpecial()
