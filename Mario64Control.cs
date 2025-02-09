@@ -132,6 +132,11 @@ public class Mario64Control : BaseCharacter
         AnimationName = "GroundPound",
         OnAnimationStart = delegate
         {
+            Vector2 groundPositionViaRaycast = GetGroundPositionViaRaycast();
+            bool IsFacingRight = (bool)GetField("IsFacingRight");
+            EffectSprite.Create(groundPositionViaRaycast + new Vector2(0f, 0.2f), EffectSprite.Sprites.DustPuff, IsFacingRight);
+            EffectSprite.Create(groundPositionViaRaycast + new Vector2(0f, 0.2f), EffectSprite.Sprites.DustPuff, !IsFacingRight);
+
             SetPlayerState(PlayerStateENUM.Attacking);
             typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0,
                 new HitBoxDamageParameters
