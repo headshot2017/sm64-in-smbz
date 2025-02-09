@@ -67,7 +67,7 @@ public class LocalizationExt
         new LanguageKeyPairExt(ResourceKeyExtENUM.Twirl, "Twirl", "Ataque giratorio"),
         new LanguageKeyPairExt(ResourceKeyExtENUM.GroundTwirl, "Quick Twirl", "Ataque giratorio rápido"),
         new LanguageKeyPairExt(ResourceKeyExtENUM.GroundPound, "Ground Pound", "Ground Pound"),
-        new LanguageKeyPairExt(ResourceKeyExtENUM.PunchSpin, "Punch Spin", "Puñetazo giratorio"),
+        new LanguageKeyPairExt(ResourceKeyExtENUM.PunchSpin, "Superstar Spin", "Giro Superestrella"),
         new LanguageKeyPairExt(ResourceKeyExtENUM.SuperUppercut, "Super Uppercut", "Super Uppercut"),
         new LanguageKeyPairExt(ResourceKeyExtENUM.WhileMoving, "While moving", "Al moverse"),
         new LanguageKeyPairExt(ResourceKeyExtENUM.WhenMovingFastPunch, "When moving fast, Mario will dive instead of punching", "Al moverse rápido, Mario hará esto en vez de un puñetazo"),
