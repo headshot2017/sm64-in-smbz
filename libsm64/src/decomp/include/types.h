@@ -329,6 +329,7 @@ struct MarioState
 
     u8 canRecover; // SMBZ-64 libsm64
     u32 actionArg2; // SMBZ-64 libsm64
+    f32 bonusMaxSpeed; // SMBZ-64 libsm64
 };
 
 #endif // TYPES_H

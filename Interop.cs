@@ -205,6 +205,8 @@ namespace LibSM64
         [DllImport("sm64")]
         static extern void sm64_set_mario_forward_velocity(int marioId, float vel);
         [DllImport("sm64")]
+        static extern void sm64_set_mario_bonus_speed(int marioId, float speed);
+        [DllImport("sm64")]
         static extern void sm64_set_mario_invincibility(int marioId, short timer);
         [DllImport("sm64")]
         static extern void sm64_set_mario_water_level(int marioId, int level);
@@ -418,6 +420,11 @@ namespace LibSM64
         public static void MarioSetForwardVelocity(int marioId, float vel)
         {
             sm64_set_mario_forward_velocity(marioId, vel);
+        }
+
+        public static void MarioSetBonusSpeed(int marioId, float speed)
+        {
+            sm64_set_mario_bonus_speed(marioId, speed);
         }
 
         public static void MarioTakeDamage(int marioId, uint damage, uint subtype, Vector3 pos)

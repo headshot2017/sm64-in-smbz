@@ -127,6 +127,11 @@ namespace LibSM64
             Interop.MarioSetForwardVelocity(marioId, vel);
         }
 
+        public void SetBonusSpeed(float speed)
+        {
+            Interop.MarioSetBonusSpeed(marioId, speed);
+        }
+
         public void TakeDamage(uint damage, uint subtype, Vector3 pos)
         {
             Interop.MarioTakeDamage(marioId, damage, subtype, pos);

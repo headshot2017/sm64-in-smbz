@@ -8,7 +8,6 @@ using static SM64Constants.MarioAnimID;
 using ActionKeyPair = System.Collections.Generic.KeyValuePair<SM64Constants.Action, uint>;
 using AnimKeyPair = System.Collections.Generic.KeyValuePair<SM64Constants.MarioAnimID, short>;
 using SMBZG;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class Mario64Control : BaseCharacter
 {
@@ -1052,6 +1051,10 @@ public class Mario64Control : BaseCharacter
         {
             Melon<SMBZ_64.Core>.Logger.Msg($"Mario64Control: {e}");
         }
+
+        CharacterControl MyCharacterControl = (CharacterControl)GetField("MyCharacterControl");
+        float ARS_MoveSpeedBonus = (float)typeof(CharacterControl).GetField("ARS_MoveSpeedBonus", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(MyCharacterControl);
+        sm64.SetBonusSpeed(ARS_MoveSpeedBonus*3);
 
         if (sm64.marioState.action == (uint)ACT_CUSTOM_ANIM)
         {

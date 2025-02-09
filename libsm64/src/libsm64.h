@@ -178,6 +178,7 @@ extern SM64_LIB_FN void sm64_set_mario_angle(int32_t marioId, float x, float y, 
 extern SM64_LIB_FN void sm64_set_mario_faceangle(int32_t marioId, float y);
 extern SM64_LIB_FN void sm64_set_mario_velocity(int32_t marioId, float x, float y, float z);
 extern SM64_LIB_FN void sm64_set_mario_forward_velocity(int32_t marioId, float vel);
+extern SM64_LIB_FN void sm64_set_mario_bonus_speed(int32_t marioId, float speed);
 extern SM64_LIB_FN void sm64_set_mario_invincibility(int32_t marioId, int16_t timer);
 extern SM64_LIB_FN void sm64_set_mario_water_level(int32_t marioId, signed int level);
 extern SM64_LIB_FN void sm64_set_mario_gas_level(int32_t marioId, signed int level);

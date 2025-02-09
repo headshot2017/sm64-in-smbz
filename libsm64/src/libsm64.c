@@ -474,6 +474,20 @@ SM64_LIB_FN void sm64_set_mario_forward_velocity(int32_t marioId, float vel)
     gMarioState->forwardVel = vel;
 }
 
+SM64_LIB_FN void sm64_set_mario_bonus_speed(int32_t marioId, float speed)
+{
+    if( marioId >= s_mario_instance_pool.size || s_mario_instance_pool.objects[marioId] == NULL )
+    {
+        DEBUG_PRINT("Tried to use non-existant Mario with ID: %d", marioId);
+        return;
+    }
+
+    struct GlobalState *globalState = ((struct MarioInstance *)s_mario_instance_pool.objects[ marioId ])->globalState;
+    global_state_bind( globalState );
+
+    gMarioState->bonusMaxSpeed = speed;
+}
+
 SM64_LIB_FN void sm64_set_mario_invincibility(int32_t marioId, int16_t timer)
 {
     if( marioId >= s_mario_instance_pool.size || s_mario_instance_pool.objects[marioId] == NULL )
