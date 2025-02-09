@@ -1,13 +1,13 @@
 default: lib
 
-ifdef LIBSM64_MUSL
-  CC      := musl-gcc
-  CXX     := musl-g++
+CC      := cc
+CXX     := c++
+ifeq ($(OS),Windows_NT)
   LDFLAGS := -lm -static -shared
+  LIBS    := -lSDL2 -lole32 -lgdi32 -lwinmm -limm32 -lversion -lcfgmgr32 -loleaut32 -lsetupapi
 else
-  CC      := cc
-  CXX     := c++
-  LDFLAGS := -lm -static -shared
+  LDFLAGS := -lm -shared
+  LIBS    := -lSDL2
 endif
 CFLAGS := -fno-strict-aliasing -g -Wall -Wno-unused-function -fPIC -fvisibility=hidden -DSM64_LIB_EXPORT -DGBI_FLOATS -DVERSION_US -DNO_SEGMENTED_MEMORY
 
@@ -53,7 +53,7 @@ $(BUILD_DIR)/%.o: %.cpp $(IMPORTED)
 	$(CXX) -c $(CFLAGS) -I src/decomp/include -o $@ $<
 
 $(LIB_FILE): $(O_FILES)
-	$(CC) $(LDFLAGS) -o $@ $^ -lSDL2 -lole32 -lgdi32 -lwinmm -limm32 -lversion -lcfgmgr32 -loleaut32 -lsetupapi
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 $(LIB_H_FILE): src/libsm64.h
 	cp -f $< $@
