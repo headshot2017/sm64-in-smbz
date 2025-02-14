@@ -768,7 +768,7 @@ public class Mario64Control : BaseCharacter
                             Owner = this,
                             Tag = base.tag,
                             Damage = 1.5f,
-                            HitStun = 0.3f,
+                            HitStun = 0.2f,
                             GetLaunch = () => new Vector2(-sm64.marioState.velocity[0] / 4f, 0),
                             FreezeTime = 0.03f,
                             Priority = BattleCache.PriorityType.Medium,
