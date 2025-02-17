@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using System.Reflection;
 using SMBZG.CharacterSelect;
 using SMBZG;
+using System.Security.Cryptography;
+using System.Text;
 
 [assembly: MelonInfo(typeof(SMBZ_64.Core), "SMBZ_64", "1.0.0", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
@@ -19,20 +21,43 @@ namespace SMBZ_64
 
         public static CharacterData_SO Mario64Data = null;
         public bool showError;
+        public string errorMsg;
 
         public override void OnInitializeMelon()
         {
             byte[] rom;
+
             try
             {
                 rom = File.ReadAllBytes("sm64.z64");
             }
             catch (FileNotFoundException)
             {
-                LoggerInstance.Msg("Super Mario 64 US ROM 'sm64.z64' not found");
+                errorMsg = "Super Mario 64 US ROM not found.\nPlease supply a ROM with the filename 'sm64.z64' in the folder where the EXE is located";
                 showError = true;
+                LoggerInstance.Msg(errorMsg);
                 return;
             }
+
+            using (var cryptoProvider = new SHA1CryptoServiceProvider())
+            {
+                byte[] hash = cryptoProvider.ComputeHash(rom);
+                StringBuilder result = new StringBuilder(4 * 2);
+
+                for (int i = 0; i < 4; i++)
+                    result.Append(hash[i].ToString("x2"));
+
+                string hashStr = result.ToString();
+
+                if (hashStr != "9bef1128")
+                {
+                    errorMsg = $"Super Mario 64 US ROM 'sm64.z64' SHA-1 mismatch\nExpected: 9bef1128\nYour copy: {hashStr}\n\nPlease supply the correct ROM.";
+                    showError = true;
+                    LoggerInstance.Msg(errorMsg);
+                    return;
+                }
+            }
+
             Interop.GlobalInit(rom);
         }
 
@@ -42,7 +67,7 @@ namespace SMBZ_64
             {
                 GUI.BeginGroup(new Rect(Screen.width / 2 - 160, Screen.height / 2 - 120, 320, 240));
                 GUI.Box(new Rect(0, 0, 320, 240), "SMBZ_64");
-                GUI.Label(new Rect(32, 32, 320-64, 240-64), "Super Mario 64 US ROM not found.\nPlease supply a ROM with the filename 'sm64.z64' in the folder where the EXE is located");
+                GUI.Label(new Rect(32, 32, 320-64, 240-64), errorMsg);
 
                 if (GUI.Button(new Rect(20, 240-64-8, 320-40, 64), "OK"))
                     showError = false;
