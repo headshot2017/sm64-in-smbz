@@ -1545,7 +1545,7 @@ public class Mario64Control : BaseCharacter
                     CanInitiateBurst = false,
                     OnHitCallback = delegate (BaseCharacter target, bool wasBlocked)
                     {
-                        MovementRushManager.MRDataStore.PlayerStatus playerStatus = manager.FetchActiveRushPlayerData(target);
+                        MovementRushManager.MRDataStore.ParticipantStatus playerStatus = manager.FetchActiveRushPlayerData(target);
                         if (playerStatus != null)
                         {
                             FieldInfo StrikeAmmo = typeof(BaseCharacter).GetField("MR_StrikeAmmo", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -1821,7 +1821,7 @@ public class Mario64Control : BaseCharacter
                 sm64.SetForwardVelocity(0);
             }
 
-            if (ContactGround && PursueData.StartupCountdown <= 0f)
+            if (HasContactGroundThisFrame && PursueData.StartupCountdown <= 0f)
             {
                 PursueData.StartupCountdown = 0.15f;
             }
@@ -1859,7 +1859,7 @@ public class Mario64Control : BaseCharacter
 
             bool num2 = Vector2.Distance(base.transform.position, PursueData.Target.transform.position) < 1.2f;
             bool flag = ((bool)IsFacingRightField.GetValue(this) ? (PursueData.Target.transform.position.x + 1f < base.transform.position.x) : (base.transform.position.x < PursueData.Target.transform.position.x - 1f));
-            if (ContactGround && Comp_Rigidbody2D.velocity.y < -1f && Mathf.Abs(Comp_Rigidbody2D.velocity.x) < 3f)
+            if (HasContactGroundThisFrame && Comp_Rigidbody2D.velocity.y < -1f && Mathf.Abs(Comp_Rigidbody2D.velocity.x) < 3f)
             {
                 PursueData.Direction = new Vector2((float)((PursueData.Direction.x > 0f) ? 1 : (-1)) * (Mathf.Abs(PursueData.Direction.x) + Mathf.Abs(PursueData.Direction.y)), 0f);
             }
@@ -2139,9 +2139,9 @@ public class Mario64Control : BaseCharacter
     {
         CharacterControl MyCharacterControl = (CharacterControl)GetField("MyCharacterControl");
         IntensityDataStore Intensity = (IntensityDataStore)typeof(BattleController).GetField("Intensity", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(BattleController.instance);
-        if (Intensity.IsCriticalHitReady(MyCharacterControl.PlayerDataReference.PlayerIndex))
+        if (Intensity.IsCriticalHitReady(MyCharacterControl.ParticipantDataReference.ParticipantIndex))
         {
-            Intensity.UseCriticalStrike(MyCharacterControl.PlayerDataReference.PlayerIndex);
+            Intensity.UseCriticalStrike(MyCharacterControl.ParticipantDataReference.ParticipantIndex);
             PrepareAnAttack(AttBun_CriticalPunch);
         }
         else

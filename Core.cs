@@ -160,12 +160,8 @@ namespace SMBZ_64
 
             switch (buildIndex)
             {
-                case 3:
+                case 4:
                     BattleTerrain();
-                    break;
-
-                case 6:
-                    SetupCharSelect();
                     break;
             }
         }
@@ -245,7 +241,6 @@ namespace SMBZ_64
 
         public void RefreshStaticTerrain()
         {
-            LoggerInstance.Msg("refreshstaticterrain");
             Interop.StaticSurfacesLoad(Utils.GetAllStaticSurfaces());
         }
 
@@ -302,11 +297,6 @@ namespace SMBZ_64
             LoggerInstance.Msg($"ground pos: {GroundPositionY}");
         }
 
-        void SetupCharSelect()
-        {
-            
-        }
-
 
         public static void OnMarioChangeAction(SM64Mario o)
         {
@@ -331,10 +321,10 @@ namespace SMBZ_64
         {
             private static bool Prefix(CharacterControl __instance)
             {
-                ModSettings.Player player = ModSettings.GetPlayerSettings(__instance.PlayerDataReference.PlayerIndex);
-                if (__instance.PlayerDataReference.InitialCharacterData == BattleCache.ins.CharacterData_Mario && player.Mario_SM64_IsEnabled.Value)
+                ModSettings.Player player = ModSettings.GetPlayerSettings(__instance.ParticipantDataReference.ParticipantIndex);
+                if (__instance.ParticipantDataReference.InitialCharacterData == BattleCache.ins.CharacterData_Mario && player.Mario_SM64_IsEnabled.Value)
                 {
-                    __instance.PlayerDataReference.CurrentCharacterData = Mario64Data;
+                    __instance.ParticipantDataReference.CurrentCharacterData = Mario64Data;
                 }
 
                 return true;
@@ -346,9 +336,11 @@ namespace SMBZ_64
         {
             private static bool Prefix(BattleController __instance, int PlayerIndex)
             {
-                CharacterControl Player1 = (CharacterControl)typeof(BattleController).GetField("Player1", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                CharacterControl Player2 = (CharacterControl)typeof(BattleController).GetField("Player2", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                PlayerBattleDataModel PlayerModel = ((PlayerIndex == 2) ? Player2 : Player1).PlayerDataReference;
+                //CharacterControl Player1 = (CharacterControl)typeof(BattleController).GetField("Player1", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                //CharacterControl Player2 = (CharacterControl)typeof(BattleController).GetField("Player2", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                List<CharacterControl> ActiveCharacterControlList = (List<CharacterControl>)typeof(BattleController).GetField("ActiveCharacterControlList", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                CharacterControl characterControl = ((PlayerIndex == 2) ? ActiveCharacterControlList.ElementAtOrDefault(1) : ActiveCharacterControlList.ElementAtOrDefault(0));
+                BattleParticipantDataModel PlayerModel = characterControl.ParticipantDataReference;
                 if (PlayerModel.CurrentCharacterData != Mario64Data)
                     return true;
 

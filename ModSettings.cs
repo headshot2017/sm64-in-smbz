@@ -1,11 +1,10 @@
-﻿using TeamUtility.IO;
-using MelonLoader;
+﻿using MelonLoader;
 
 public static class ModSettings
 {
     public class Player
     {
-        public Player(PlayerID PlayerID)
+        public Player(int PlayerID)
         {
             playerCategory = MelonPreferences.CreateCategory($"Player{PlayerID}Preferences");
             playerCategory.SetFilePath("UserData/SMBZ_64.cfg");
@@ -16,11 +15,12 @@ public static class ModSettings
         public MelonPreferences_Entry<bool> Mario_SM64_IsEnabled;
     }
 
-    public static Player GetPlayerSettings(PlayerID id)
+    public static Player GetPlayerSettings(int id)
     {
-        return (id == PlayerID.One) ? Player1Settings : (id == PlayerID.Two) ? Player2Settings : null;
+        if (!PlayerSettings.ContainsKey(id))
+            PlayerSettings.Add(id, new Player(id));
+        return PlayerSettings[id];
     }
 
-    static Player Player1Settings = new Player(PlayerID.One);
-    static Player Player2Settings = new Player(PlayerID.Two);
+    static Dictionary<int, Player> PlayerSettings = new Dictionary<int, Player>();
 }
