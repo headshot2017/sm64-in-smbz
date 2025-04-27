@@ -29,6 +29,10 @@ namespace SMBZG.CharacterSelect
                 navigation.mode = Navigation.Mode.Explicit;
                 navigation.selectOnUp = ins.Toggle_UseAlternateColor;
                 ins.Toggle_SM64.navigation = navigation;
+
+                int ParticipantIndex = (int)typeof(UI_Participant).GetField("ParticipantIndex", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(participantUI);
+                ModSettings.Player playerSettings = ModSettings.GetPlayerSettings(ParticipantIndex);
+                ins.Toggle_SM64.isOn = playerSettings.Mario_SM64_IsEnabled.Value;
             }
         }
 
@@ -39,6 +43,7 @@ namespace SMBZG.CharacterSelect
 
             ModSettings.Player playerSettings = ModSettings.GetPlayerSettings(ParticipantIndex);
             playerSettings.Mario_SM64_IsEnabled.Value = isOn;
+            playerSettings.playerCategory.SaveToFile();
         }
     }
 }
