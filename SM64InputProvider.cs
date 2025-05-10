@@ -1,5 +1,6 @@
 using UnityEngine;
 using MelonLoader;
+using System.Reflection;
 
 namespace LibSM64
 {
@@ -32,16 +33,27 @@ namespace LibSM64
 
         public override Vector2 GetJoystickAxes()
         {
+            bool IsCPUControlled = c.ParticipantDataReference.CPUSettings != BattleCache.CPUSettingsENUM.Player;
+
             if (overrideInput)
                 return joyOverride;
             if (c.IsInputLocked)
                 return new Vector2(0,0);
+            if (IsCPUControlled)
+            {
+                AI_Bundle AI = (AI_Bundle)c.GetType().GetField("AI", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(c);
+                return new Vector2(-AI.MovementIdea.HorizontalDirection, 0);
+            }
 
             return -((c.Button_Left.IsHeld) ? Vector2.left : (c.Button_Right.IsHeld) ? Vector2.right : Vector2.zero);
         }
 
         public override bool GetButtonHeld(Button button)
         {
+            bool IsCPUControlled = c.ParticipantDataReference.CPUSettings != BattleCache.CPUSettingsENUM.Player;
+            AI_Bundle AI = (AI_Bundle)c.GetType().GetField("AI", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(c);
+            if (IsCPUControlled)
+
             if (overrideInput)
                 return buttonOverride.Contains(button);
             if (c.IsInputLocked)
@@ -50,7 +62,7 @@ namespace LibSM64
             switch (button)
             {
                 case Button.Jump:
-                    return c.Button_Jump.IsHeld;
+                    return c.Button_Jump.IsHeld || (IsCPUControlled && AI.JumpIdea != null && AI.JumpIdea.HasActivated);
 
                 case Button.Kick:
                     return c.Button_A.IsHeld;
