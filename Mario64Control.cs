@@ -1848,8 +1848,32 @@ public class Mario64Control : BaseCharacter
                             if (playerStatus.Health <= 0)
                             {
                                 CharacterControl target_MyCharacterControl = (CharacterControl)target.GetType().GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(target);
-                                c.CurrentAttackData = null;
-                                c.PerformAction_Finale(target_MyCharacterControl);
+
+                                // WHY is this not public???
+                                MethodInfo IsThereOnlyOneTeamRemaining = manager.GetType().GetMethod("IsThereOnlyOneTeamRemaining", BindingFlags.NonPublic | BindingFlags.Instance);
+                                if ((bool)IsThereOnlyOneTeamRemaining.Invoke(manager, null))
+                                {
+                                    c.CurrentAttackData = null;
+                                    c.PerformAction_Finale(target_MyCharacterControl);
+                                }
+                                else
+                                {
+                                    target.GetType().GetField("IsIntangible", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(target, true);
+                                    target_MyCharacterControl.InputLockTimer = 4f;
+                                    target.GetType().GetProperty("HitStun", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(target, 4f);
+                                    target.Comp_Hurtbox.enabled = false;
+                                    target.SetVelocity(target.GetVelocity() * 5f);
+                                    BattleCameraManager CamManager = (BattleCameraManager)typeof(BattleController).GetField("CameraManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
+                                    CamManager.MainTargetGroup.RemoveMember(target_MyCharacterControl.transform);
+                                    c.StartCoroutine(target_MyCharacterControl.gameObject.Delayed_Invokation(delegate
+                                    {
+                                        if (target != null)
+                                        {
+                                            target.Comp_Hurtbox.enabled = true;
+                                            target_MyCharacterControl.UnloadCharacterObject();
+                                        }
+                                    }, 1f));
+                                }
                             }
                         }
                     }
