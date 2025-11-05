@@ -2247,7 +2247,7 @@ public class Mario64Control : BaseCharacter
                     CharacterControl MyCharacterControl = (CharacterControl)GetField("MyCharacterControl");
                     CharacterControl targetControl = (CharacterControl)GetType().GetField("MyCharacterControl", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(t);
 
-                    if (victoryStrikeType == BurstDataStore.VictoryStrikeENUM.MovementRushStarter && SaveData.Data.MovementRush_IsEnabled_ViaCriticalStrikes && t != null && !t_IsNPC && t.IsHurt)
+                    if (victoryStrikeType == BurstDataStore.VictoryStrikeENUM.MovementRushStarter && SaveData.Data.CriticalStrikeResult == 0 && t != null && !t_IsNPC && t.IsHurt)
                     {
                         SMBZGlobals.MovementRushManager.StartNewMovementRush(IsFacingRight, new List<CharacterControl> { MyCharacterControl }, new List<CharacterControl> { targetControl });
                     }
