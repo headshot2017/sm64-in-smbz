@@ -2021,7 +2021,6 @@ public class Mario64Control : BaseCharacter
     {
         FieldInfo PursueDataField = GetType().GetField("PursueData", BindingFlags.NonPublic | BindingFlags.Instance);
         PursueBundle PursueData = (PursueBundle)PursueDataField.GetValue(this);
-        FieldInfo isChargingField = typeof(PursueBundle).GetField("isCharging", BindingFlags.NonPublic | BindingFlags.Instance);
         FieldInfo IsFacingRightField = GetType().GetField("IsFacingRight", BindingFlags.NonPublic | BindingFlags.Instance);
         bool IsFrozen = (bool)GetField("IsFrozen");
 
@@ -2048,7 +2047,7 @@ public class Mario64Control : BaseCharacter
                 //Comp_Animator.Play(base.IsOnGround ? Animations.PrePursue : Animations.PrePursueRoll, -1, 0f);
             }
 
-            if ((bool)isChargingField.GetValue(PursueData))
+            if (PursueData.isCharging)
             {
                 sm64.SetForwardVelocity(0);
             }
@@ -2058,12 +2057,12 @@ public class Mario64Control : BaseCharacter
                 PursueData.StartupCountdown = 0.15f;
             }
 
-            if (PursueData.StartupCountdown <= 0f && (!(bool)isChargingField.GetValue(PursueData) || ((bool)isChargingField.GetValue(PursueData) && PursueData.ChargePower >= 100f)) && base.IsOnGround)
+            if (PursueData.StartupCountdown <= 0f && (!PursueData.isCharging || (PursueData.isCharging && PursueData.ChargePower >= 100f)) && base.IsOnGround)
             {
                 PursueData.PursueCountdown = 10f;
                 PursueData.IsPursuing = true;
                 PursueData.IsPreping = false;
-                isChargingField.SetValue(PursueData, false);
+                PursueData.isCharging = false;
                 SetPlayerState(PlayerStateENUM.Pursuing);
                 SetField("ComboSwingCounter", 0);
                 float num = Helpers.Vector2ToDegreeAngle_180(base.transform.position, PursueData.Target.transform.position);

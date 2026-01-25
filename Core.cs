@@ -1,11 +1,7 @@
 ﻿using MelonLoader;
 using LibSM64;
-using HarmonyLib;
 using UnityEngine;
-using UnityEngine.UI;
 using System.Reflection;
-using SMBZG.CharacterSelect;
-using SMBZG;
 using System.Security.Cryptography;
 using System.Text;
 
