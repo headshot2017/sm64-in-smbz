@@ -874,7 +874,7 @@ public class Mario64Control : BaseCharacter
     protected override void Awake()
     {
         Melon<SMBZ_64.Core>.Logger.Msg("Mario64Control Awake");
-        Comp_InterplayerCollider = gameObject.transform.GetChild(2).gameObject.GetComponent<InterplayerCollider>();
+        Comp_InterplayerCollider = GetComponentInChildren<InterplayerCollider>();
         Comp_InterplayerCollider.GetType().GetField("MyCharacter", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Comp_InterplayerCollider, this);
         Comp_InterplayerCollider.gameObject.GetComponent<CapsuleCollider2D>().size = new Vector2(2.8f, 1f);
         AdditionalCharacterSpriteList = new List<SpriteRenderer>();
