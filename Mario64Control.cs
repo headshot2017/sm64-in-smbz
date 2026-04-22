@@ -121,6 +121,10 @@ public class Mario64Control : BaseCharacter
             base.HitBox_0.IsActive = false;
             Comp_InterplayerCollider.Disable();
         },
+        OnInterrupt = delegate
+        {
+            Comp_InterplayerCollider.Enable();
+        },
         OnUpdate = delegate
         {
             base.HitBox_0.IsActive = (sm64.marioState.velocity[1] < -50f);
